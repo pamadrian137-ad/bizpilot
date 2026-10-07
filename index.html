@@ -1,0 +1,1874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>BizPilot — Your Business Growth Assistant</title>
+
+    <meta
+        name="description"
+        content="BizPilot helps Kenyan small businesses understand sales, customers, inventory and business growth."
+    >
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- ============================= -->
+    <!-- SIDEBAR -->
+    <!-- ============================= -->
+
+    <aside class="sidebar" id="sidebar">
+
+        <div class="brand">
+
+            <div class="brand-icon">
+                B
+            </div>
+
+            <div class="brand-text">
+
+                <strong>
+                    BizPilot
+                </strong>
+
+                <span>
+                    Business Companion
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <nav class="navigation">
+
+            <p class="nav-label">
+                MAIN
+            </p>
+
+
+            <button
+                class="nav-item active"
+                data-page="dashboard"
+            >
+
+                <span class="nav-icon">
+                    ⌂
+                </span>
+
+                <span>
+                    Dashboard
+                </span>
+
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-page="sales"
+            >
+
+                <span class="nav-icon">
+                    ↗
+                </span>
+
+                <span>
+                    Sales
+                </span>
+
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-page="expenses"
+            >
+
+                <span class="nav-icon">
+                    ↘
+                </span>
+
+                <span>
+                    Expenses
+                </span>
+
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-page="inventory"
+            >
+
+                <span class="nav-icon">
+                    ▦
+                </span>
+
+                <span>
+                    Inventory
+                </span>
+
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-page="customers"
+            >
+
+                <span class="nav-icon">
+                    ♙
+                </span>
+
+                <span>
+                    Customers
+                </span>
+
+            </button>
+
+
+            <p class="nav-label">
+                GROWTH
+            </p>
+
+
+            <button
+                class="nav-item"
+                data-page="insights"
+            >
+
+                <span class="nav-icon ai-icon">
+                    ✦
+                </span>
+
+                <span>
+                    AI Insights
+                </span>
+
+                <span class="pro-badge">
+                    AI
+                </span>
+
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-page="invoices"
+            >
+
+                <span class="nav-icon">
+                    ▤
+                </span>
+
+                <span>
+                    Invoices
+                </span>
+
+            </button>
+
+
+            <button
+                class="nav-item"
+                data-page="reports"
+            >
+
+                <span class="nav-icon">
+                    ▥
+                </span>
+
+                <span>
+                    Reports
+                </span>
+
+            </button>
+
+
+            <p class="nav-label">
+                BUSINESS
+            </p>
+
+
+            <button
+                class="nav-item"
+                data-page="settings"
+            >
+
+                <span class="nav-icon">
+                    ⚙
+                </span>
+
+                <span>
+                    Settings
+                </span>
+
+            </button>
+
+        </nav>
+
+
+        <div class="sidebar-bottom">
+
+
+            <div class="upgrade-card">
+
+                <div class="upgrade-icon">
+                    ✦
+                </div>
+
+                <strong>
+                    Unlock BizPilot Pro
+                </strong>
+
+                <p>
+                    Get smarter insights, advanced tools and business growth features.
+                </p>
+
+                <button class="upgrade-btn">
+                    Explore Pro
+                </button>
+
+            </div>
+
+
+            <div class="user-profile">
+
+                <div class="avatar">
+                    A
+                </div>
+
+                <div>
+
+                    <strong>
+                        My Business
+                    </strong>
+
+                    <span>
+                        Free Plan
+                    </span>
+
+                </div>
+
+                <button class="profile-menu">
+                    •••
+                </button>
+
+            </div>
+
+        </div>
+
+    </aside>
+
+
+    <!-- ============================= -->
+    <!-- MAIN -->
+    <!-- ============================= -->
+
+    <main class="main">
+
+
+        <!-- TOPBAR -->
+
+        <header class="topbar">
+
+            <button
+                class="mobile-menu"
+                id="mobileMenu"
+            >
+                ☰
+            </button>
+
+
+            <div class="page-title-area">
+
+                <h1 id="pageTitle">
+                    Good evening 👋
+                </h1>
+
+                <p id="pageSubtitle">
+                    Here's how your business is doing today.
+                </p>
+
+            </div>
+
+
+            <div class="top-actions">
+
+                <button class="notification-btn">
+
+                    ♢
+
+                    <span></span>
+
+                </button>
+
+
+                <button
+                    class="add-sale-btn"
+                    id="quickSaleBtn"
+                >
+                    + Add Sale
+                </button>
+
+            </div>
+
+        </header>
+
+
+        <!-- PAGE CONTAINER -->
+
+        <div class="page-container">
+
+
+            <!-- ============================= -->
+            <!-- DASHBOARD -->
+            <!-- ============================= -->
+
+            <section
+                class="page active"
+                id="dashboard"
+            >
+
+                <div class="welcome-banner">
+
+                    <div>
+
+                        <span class="small-label">
+                            YOUR BUSINESS TODAY
+                        </span>
+
+                        <h2>
+                            Let's keep your business moving.
+                        </h2>
+
+                        <p>
+                            BizPilot is watching the numbers so you can focus on the business.
+                        </p>
+
+                    </div>
+
+
+                    <div class="banner-decoration">
+                        ✦
+                    </div>
+
+                </div>
+
+
+                <!-- STAT CARDS -->
+
+                <div class="stats-grid">
+
+
+                    <div class="stat-card">
+
+                        <div class="stat-top">
+
+                            <span>
+                                Today's Sales
+                            </span>
+
+                            <div class="stat-icon blue">
+                                ↗
+                            </div>
+
+                        </div>
+
+                        <strong id="todaySales">
+                            Ksh 0
+                        </strong>
+
+                        <div class="stat-change positive">
+                            ↑ 0% <span>vs yesterday</span>
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-card">
+
+                        <div class="stat-top">
+
+                            <span>
+                                Expenses
+                            </span>
+
+                            <div class="stat-icon red">
+                                ↘
+                            </div>
+
+                        </div>
+
+                        <strong id="todayExpenses">
+                            Ksh 0
+                        </strong>
+
+                        <div class="stat-change neutral">
+                            Today
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-card">
+
+                        <div class="stat-top">
+
+                            <span>
+                                Estimated Profit
+                            </span>
+
+                            <div class="stat-icon purple">
+                                ✦
+                            </div>
+
+                        </div>
+
+                        <strong id="todayProfit">
+                            Ksh 0
+                        </strong>
+
+                        <div class="stat-change positive">
+                            Healthy
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-card">
+
+                        <div class="stat-top">
+
+                            <span>
+                                Customers
+                            </span>
+
+                            <div class="stat-icon green">
+                                ♙
+                            </div>
+
+                        </div>
+
+                        <strong id="customerCount">
+                            0
+                        </strong>
+
+                        <div class="stat-change neutral">
+                            Total customers
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- MAIN DASHBOARD GRID -->
+
+                <div class="dashboard-grid">
+
+
+                    <!-- AI INSIGHT -->
+
+                    <div class="card ai-card">
+
+                        <div class="card-header">
+
+                            <div>
+
+                                <div class="ai-title">
+
+                                    <span>
+                                        ✦
+                                    </span>
+
+                                    BizPilot AI
+
+                                </div>
+
+                                <h3>
+                                    Your Business Insight
+                                </h3>
+
+                            </div>
+
+
+                            <span class="live-badge">
+                                LIVE
+                            </span>
+
+                        </div>
+
+
+                        <div class="ai-content">
+
+                            <div class="ai-main-icon">
+                                ✦
+                            </div>
+
+
+                            <div>
+
+                                <h4 id="aiInsightTitle">
+                                    Your business is ready for its first insight.
+                                </h4>
+
+                                <p id="aiInsightText">
+                                    Add your first sale or expense and BizPilot will start analyzing your business.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <button
+                            class="ai-action"
+                            data-page="insights"
+                        >
+                            View AI Insights →
+                        </button>
+
+                    </div>
+
+
+                    <!-- QUICK ACTIONS -->
+
+                    <div class="card">
+
+                        <div class="card-header">
+
+                            <div>
+
+                                <span class="small-label">
+                                    QUICK ACTIONS
+                                </span>
+
+                                <h3>
+                                    Manage your business
+                                </h3>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="quick-actions">
+
+
+                            <button
+                                class="quick-action"
+                                id="dashboardSale"
+                            >
+
+                                <span class="quick-icon blue">
+                                    +
+                                </span>
+
+                                <div>
+
+                                    <strong>
+                                        Add Sale
+                                    </strong>
+
+                                    <small>
+                                        Record a new sale
+                                    </small>
+
+                                </div>
+
+                            </button>
+
+
+                            <button
+                                class="quick-action"
+                                id="dashboardExpense"
+                            >
+
+                                <span class="quick-icon red">
+                                    −
+                                </span>
+
+                                <div>
+
+                                    <strong>
+                                        Add Expense
+                                    </strong>
+
+                                    <small>
+                                        Record business spending
+                                    </small>
+
+                                </div>
+
+                            </button>
+
+
+                            <button
+                                class="quick-action"
+                                data-page="inventory"
+                            >
+
+                                <span class="quick-icon purple">
+                                    ▦
+                                </span>
+
+                                <div>
+
+                                    <strong>
+                                        Check Inventory
+                                    </strong>
+
+                                    <small>
+                                        View your stock
+                                    </small>
+
+                                </div>
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- LOWER GRID -->
+
+                <div class="lower-grid">
+
+
+                    <!-- PERFORMANCE -->
+
+                    <div class="card performance-card">
+
+                        <div class="card-header">
+
+                            <div>
+
+                                <span class="small-label">
+                                    PERFORMANCE
+                                </span>
+
+                                <h3>
+                                    Sales this week
+                                </h3>
+
+                            </div>
+
+
+                            <button class="period-btn">
+                                Last 7 days ▾
+                            </button>
+
+                        </div>
+
+
+                        <div class="chart-area">
+
+                            <div class="chart-values">
+
+                                <span>
+                                    10K
+                                </span>
+
+                                <span>
+                                    7.5K
+                                </span>
+
+                                <span>
+                                    5K
+                                </span>
+
+                                <span>
+                                    2.5K
+                                </span>
+
+                                <span>
+                                    0
+                                </span>
+
+                            </div>
+
+
+                            <div class="chart">
+
+                                <div class="grid-line line-1"></div>
+                                <div class="grid-line line-2"></div>
+                                <div class="grid-line line-3"></div>
+                                <div class="grid-line line-4"></div>
+
+
+                                <div class="bars">
+
+
+                                    <div class="bar-group">
+
+                                        <div
+                                            class="bar"
+                                            style="height:25%"
+                                        ></div>
+
+                                        <span>
+                                            Mon
+                                        </span>
+
+                                    </div>
+
+
+                                    <div class="bar-group">
+
+                                        <div
+                                            class="bar"
+                                            style="height:45%"
+                                        ></div>
+
+                                        <span>
+                                            Tue
+                                        </span>
+
+                                    </div>
+
+
+                                    <div class="bar-group">
+
+                                        <div
+                                            class="bar"
+                                            style="height:35%"
+                                        ></div>
+
+                                        <span>
+                                            Wed
+                                        </span>
+
+                                    </div>
+
+
+                                    <div class="bar-group">
+
+                                        <div
+                                            class="bar"
+                                            style="height:65%"
+                                        ></div>
+
+                                        <span>
+                                            Thu
+                                        </span>
+
+                                    </div>
+
+
+                                    <div class="bar-group">
+
+                                        <div
+                                            class="bar"
+                                            style="height:82%"
+                                        ></div>
+
+                                        <span>
+                                            Fri
+                                        </span>
+
+                                    </div>
+
+
+                                    <div class="bar-group">
+
+                                        <div
+                                            class="bar"
+                                            style="height:58%"
+                                        ></div>
+
+                                        <span>
+                                            Sat
+                                        </span>
+
+                                    </div>
+
+
+                                    <div class="bar-group">
+
+                                        <div
+                                            class="bar today"
+                                            style="height:38%"
+                                        ></div>
+
+                                        <span>
+                                            Sun
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- RECENT TRANSACTIONS -->
+
+                    <div class="card transactions-card">
+
+                        <div class="card-header">
+
+                            <div>
+
+                                <span class="small-label">
+                                    ACTIVITY
+                                </span>
+
+                                <h3>
+                                    Recent transactions
+                                </h3>
+
+                            </div>
+
+
+                            <button
+                                class="text-btn"
+                                data-page="sales"
+                            >
+                                View all
+                            </button>
+
+                        </div>
+
+
+                        <div id="recentTransactions">
+
+                            <div class="empty-state">
+
+                                <div>
+                                    ◎
+                                </div>
+
+                                <p>
+                                    No transactions yet.
+                                </p>
+
+                                <small>
+                                    Your recent activity will appear here.
+                                </small>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- ============================= -->
+            <!-- SALES -->
+            <!-- ============================= -->
+
+            <section
+                class="page"
+                id="sales"
+            >
+
+                <div class="section-heading">
+
+                    <div>
+
+                        <span class="small-label">
+                            SALES
+                        </span>
+
+                        <h2>
+                            Track your revenue
+                        </h2>
+
+                        <p>
+                            Keep a simple record of every sale.
+                        </p>
+
+                    </div>
+
+
+                    <button
+                        class="primary-btn"
+                        id="salesAddBtn"
+                    >
+                        + Add Sale
+                    </button>
+
+                </div>
+
+
+                <div class="card">
+
+                    <div class="table-header">
+
+                        <strong>
+                            Recent Sales
+                        </strong>
+
+
+                        <div class="table-search">
+
+                            <input
+                                type="text"
+                                id="salesSearch"
+                                placeholder="Search sales..."
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="table-wrapper">
+
+                        <table>
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>
+                                        Date
+                                    </th>
+
+                                    <th>
+                                        Customer
+                                    </th>
+
+                                    <th>
+                                        Description
+                                    </th>
+
+                                    <th>
+                                        Payment
+                                    </th>
+
+                                    <th>
+                                        Amount
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+
+                            <tbody id="salesTableBody"></tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- ============================= -->
+            <!-- EXPENSES -->
+            <!-- ============================= -->
+
+            <section
+                class="page"
+                id="expenses"
+            >
+
+                <div class="section-heading">
+
+                    <div>
+
+                        <span class="small-label">
+                            EXPENSES
+                        </span>
+
+                        <h2>
+                            Know where your money goes
+                        </h2>
+
+                        <p>
+                            Track spending and protect your profit.
+                        </p>
+
+                    </div>
+
+
+                    <button
+                        class="primary-btn"
+                        id="expenseAddBtn"
+                    >
+                        + Add Expense
+                    </button>
+
+                </div>
+
+
+                <div class="card">
+
+                    <div class="table-header">
+
+                        <strong>
+                            Recent Expenses
+                        </strong>
+
+                    </div>
+
+
+                    <div class="table-wrapper">
+
+                        <table>
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>
+                                        Date
+                                    </th>
+
+                                    <th>
+                                        Category
+                                    </th>
+
+                                    <th>
+                                        Description
+                                    </th>
+
+                                    <th>
+                                        Amount
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+
+                            <tbody id="expensesTableBody"></tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- ============================= -->
+            <!-- INVENTORY -->
+            <!-- ============================= -->
+
+            <section
+                class="page"
+                id="inventory"
+            >
+
+                <div class="section-heading">
+
+                    <div>
+
+                        <span class="small-label">
+                            INVENTORY
+                        </span>
+
+                        <h2>
+                            Know your stock
+                        </h2>
+
+                        <p>
+                            Never get surprised by low stock again.
+                        </p>
+
+                    </div>
+
+
+                    <button
+                        class="primary-btn"
+                        id="inventoryAddBtn"
+                    >
+                        + Add Product
+                    </button>
+
+                </div>
+
+
+                <div
+                    class="inventory-grid"
+                    id="inventoryGrid"
+                >
+
+                    <div class="empty-large">
+
+                        <div>
+                            ▦
+                        </div>
+
+                        <h3>
+                            No products yet
+                        </h3>
+
+                        <p>
+                            Add your first product to start tracking inventory.
+                        </p>
+
+                        <button
+                            class="primary-btn"
+                            id="emptyInventoryBtn"
+                        >
+                            Add Product
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- ============================= -->
+            <!-- CUSTOMERS -->
+            <!-- ============================= -->
+
+            <section
+                class="page"
+                id="customers"
+            >
+
+                <div class="section-heading">
+
+                    <div>
+
+                        <span class="small-label">
+                            CUSTOMERS
+                        </span>
+
+                        <h2>
+                            Know your customers
+                        </h2>
+
+                        <p>
+                            Build relationships that bring customers back.
+                        </p>
+
+                    </div>
+
+
+                    <button
+                        class="primary-btn"
+                        id="customerAddBtn"
+                    >
+                        + Add Customer
+                    </button>
+
+                </div>
+
+
+                <div
+                    class="customer-grid"
+                    id="customerGrid"
+                >
+
+                    <div class="empty-large">
+
+                        <div>
+                            ♙
+                        </div>
+
+                        <h3>
+                            No customers yet
+                        </h3>
+
+                        <p>
+                            Add customers and BizPilot will help you understand them.
+                        </p>
+
+                        <button
+                            class="primary-btn"
+                            id="emptyCustomerBtn"
+                        >
+                            Add Customer
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- ============================= -->
+            <!-- AI INSIGHTS -->
+            <!-- ============================= -->
+
+            <section
+                class="page"
+                id="insights"
+            >
+
+                <div class="section-heading">
+
+                    <div>
+
+                        <div class="ai-title">
+
+                            <span>
+                                ✦
+                            </span>
+
+                            BIZPILOT AI
+
+                        </div>
+
+                        <h2>
+                            Your business, explained.
+                        </h2>
+
+                        <p>
+                            Simple insights that help you decide what to do next.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <!-- AI BUSINESS HEALTH -->
+
+                <div class="ai-dashboard-grid">
+
+
+                    <div class="ai-large-card">
+
+                        <div class="ai-large-symbol">
+                            ✦
+                        </div>
+
+                        <span class="small-label">
+                            BUSINESS HEALTH
+                        </span>
+
+                        <h2 id="businessHealth">
+                            Getting started
+                        </h2>
+
+                        <p id="businessHealthText">
+                            Add more business activity and BizPilot will generate personalized insights.
+                        </p>
+
+                    </div>
+
+
+                    <!-- KEY INSIGHTS -->
+
+                    <div class="insight-list">
+
+                        <div class="insight-item">
+
+                            <span>
+                                01
+                            </span>
+
+                            <div>
+
+                                <strong id="salesInsightTitle">
+                                    Sales opportunity
+                                </strong>
+
+                                <p id="salesInsightText">
+                                    BizPilot will identify products, days and customers driving your revenue.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="insight-item">
+
+                            <span>
+                                02
+                            </span>
+
+                            <div>
+
+                                <strong id="inventoryInsightTitle">
+                                    Inventory warning
+                                </strong>
+
+                                <p id="inventoryInsightText">
+                                    We'll highlight products that may need restocking.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="insight-item">
+
+                            <span>
+                                03
+                            </span>
+
+                            <div>
+
+                                <strong id="customerInsightTitle">
+                                    Customer opportunity
+                                </strong>
+
+                                <p id="customerInsightText">
+                                    Find customers who may be ready to buy again.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ============================= -->
+                <!-- WHAT TO DO NEXT -->
+                <!-- ============================= -->
+
+                <div class="card ai-next-action-card">
+
+                    <div class="card-header">
+
+                        <div>
+
+                            <div class="ai-title">
+
+                                <span>
+                                    ✦
+                                </span>
+
+                                YOUR NEXT MOVE
+
+                            </div>
+
+                            <h3>
+                                What should you do next?
+                            </h3>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="ai-content">
+
+                        <div class="ai-main-icon">
+                            →
+                        </div>
+
+
+                        <div>
+
+                            <h4 id="aiNextAction">
+                                Start recording your business activity.
+                            </h4>
+
+                            <p id="aiNextActionText">
+                                Add sales, expenses, inventory and customers so BizPilot can identify the most useful action for your business.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ============================= -->
+                <!-- AI INSIGHT SUMMARY -->
+                <!-- ============================= -->
+
+                <div class="dashboard-grid ai-summary-grid">
+
+                    <div class="card">
+
+                        <div class="card-header">
+
+                            <div>
+
+                                <span class="small-label">
+                                    SALES
+                                </span>
+
+                                <h3>
+                                    Revenue signal
+                                </h3>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="ai-summary-content">
+
+                            <strong id="aiRevenueSignal">
+                                Waiting for data
+                            </strong>
+
+                            <p id="aiRevenueSignalText">
+                                Record sales to understand your revenue trend.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="card">
+
+                        <div class="card-header">
+
+                            <div>
+
+                                <span class="small-label">
+                                    PROFIT
+                                </span>
+
+                                <h3>
+                                    Profit signal
+                                </h3>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="ai-summary-content">
+
+                            <strong id="aiProfitSignal">
+                                Waiting for data
+                            </strong>
+
+                            <p id="aiProfitSignalText">
+                                Record sales and expenses to understand your profit position.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- ============================= -->
+            <!-- INVOICES -->
+            <!-- ============================= -->
+
+            <section
+                class="page"
+                id="invoices"
+            >
+
+                <div class="section-heading">
+
+                    <div>
+
+                        <span class="small-label">
+                            INVOICES
+                        </span>
+
+                        <h2>
+                            Professional invoices
+                        </h2>
+
+                        <p>
+                            Create invoices for your customers.
+                        </p>
+
+                    </div>
+
+
+                    <!-- CONNECTED TO THE REAL INVOICE SYSTEM -->
+
+                    <button
+                        class="primary-btn"
+                        id="bizpilotAddInvoiceBtn"
+                        type="button"
+                    >
+                        + New Invoice
+                    </button>
+
+                </div>
+
+
+                <!-- REAL INVOICE SYSTEM RENDER TARGET -->
+
+                <div
+                    id="bizpilotInvoiceSystem"
+                ></div>
+
+            </section>
+
+
+            <!-- ============================= -->
+            <!-- REPORTS -->
+            <!-- ============================= -->
+
+            <section
+                class="page"
+                id="reports"
+            >
+
+                <div class="section-heading">
+
+                    <div>
+
+                        <span class="small-label">
+                            REPORTS
+                        </span>
+
+                        <h2>
+                            Business performance
+                        </h2>
+
+                        <p>
+                            Understand your business with clear reports.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="report-grid">
+
+                    <div class="report-card">
+
+                        <span>
+                            Revenue
+                        </span>
+
+                        <strong id="reportRevenue">
+                            Ksh 0
+                        </strong>
+
+                    </div>
+
+
+                    <div class="report-card">
+
+                        <span>
+                            Expenses
+                        </span>
+
+                        <strong id="reportExpenses">
+                            Ksh 0
+                        </strong>
+
+                    </div>
+
+
+                    <div class="report-card">
+
+                        <span>
+                            Profit
+                        </span>
+
+                        <strong id="reportProfit">
+                            Ksh 0
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- ============================= -->
+            <!-- SETTINGS -->
+            <!-- ============================= -->
+
+            <section
+                class="page"
+                id="settings"
+            >
+
+                <div class="section-heading">
+
+                    <div>
+
+                        <span class="small-label">
+                            SETTINGS
+                        </span>
+
+                        <h2>
+                            Business settings
+                        </h2>
+
+                        <p>
+                            Manage your BizPilot workspace.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <!-- BUSINESS SETTINGS -->
+
+                <div class="settings-card">
+
+
+                    <div class="settings-row">
+
+                        <div>
+
+                            <strong>
+                                Business name
+                            </strong>
+
+                            <p>
+                                How your business appears in BizPilot.
+                            </p>
+
+                        </div>
+
+
+                        <input
+                            type="text"
+                            id="businessName"
+                            value="My Business"
+                        >
+
+                    </div>
+
+
+                    <div class="settings-row">
+
+                        <div>
+
+                            <strong>
+                                Currency
+                            </strong>
+
+                            <p>
+                                Your default business currency.
+                            </p>
+
+                        </div>
+
+
+                        <select id="currency">
+
+                            <option value="Ksh">
+                                Ksh — Kenyan Shilling
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="settings-row">
+
+                        <div>
+
+                            <strong>
+                                Current plan
+                            </strong>
+
+                            <p>
+                                Your current BizPilot subscription.
+                            </p>
+
+                        </div>
+
+
+                        <span class="plan-pill">
+                            FREE
+                        </span>
+
+                    </div>
+
+
+                    <button
+                        class="primary-btn"
+                        id="saveSettings"
+                    >
+                        Save Changes
+                    </button>
+
+                </div>
+
+
+                <!-- ============================= -->
+                <!-- BACKUP & RESTORE -->
+                <!-- ============================= -->
+
+                <div class="settings-card">
+
+
+                    <div class="settings-row">
+
+                        <div>
+
+                            <strong>
+                                Backup & Restore
+                            </strong>
+
+                            <p>
+                                Protect your BizPilot data by creating a backup or restoring a previous backup.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- EXPORT BACKUP -->
+
+                    <div class="settings-row">
+
+                        <div>
+
+                            <strong>
+                                Export Backup
+                            </strong>
+
+                            <p>
+                                Download a copy of your current BizPilot data.
+                            </p>
+
+                        </div>
+
+
+                        <button
+                            class="primary-btn"
+                            id="exportBackup"
+                            type="button"
+                        >
+                            Export Data
+                        </button>
+
+                    </div>
+
+
+                    <!-- IMPORT BACKUP -->
+
+                    <div class="settings-row">
+
+                        <div>
+
+                            <strong>
+                                Restore Backup
+                            </strong>
+
+                            <p>
+                                Restore your BizPilot data from a backup file.
+                            </p>
+
+                        </div>
+
+
+                        <div>
+
+                            <input
+                                type="file"
+                                id="importBackupFile"
+                                accept=".json,application/json"
+                                style="display:none;"
+                            >
+
+
+                            <button
+                                class="primary-btn"
+                                id="importBackup"
+                                type="button"
+                            >
+                                Import Data
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </div>
+
+    </main>
+
+
+    <!-- ============================= -->
+    <!-- MODAL -->
+    <!-- ============================= -->
+
+    <div
+        class="modal-overlay"
+        id="modalOverlay"
+    >
+
+        <div class="modal">
+
+            <button
+                class="close-modal"
+                id="closeModal"
+            >
+                ×
+            </button>
+
+            <div id="modalContent"></div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ============================= -->
+    <!-- TOAST -->
+    <!-- ============================= -->
+
+    <div
+        class="toast"
+        id="toast"
+    >
+
+        <span>
+            ✓
+        </span>
+
+        <p id="toastMessage">
+            Saved successfully.
+        </p>
+
+    </div>
+
+
+    <!-- ============================= -->
+    <!-- SUPABASE -->
+    <!-- ============================= -->
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- BIZPILOT APP -->
+    <script src="app.js"></script>
+
+</body>
+</html>
