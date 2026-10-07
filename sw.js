@@ -2,7 +2,7 @@
    BIZPILOT — SERVICE WORKER
    ========================================================= */
 
-const CACHE_NAME = "bizpilot-v2";
+const CACHE_NAME = "bizpilot-v3";
 
 const APP_FILES = [
     "./",
