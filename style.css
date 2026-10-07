@@ -12170,3 +12170,220 @@ button {
     -webkit-tap-highlight-color: transparent !important;
     touch-action: manipulation !important;
 }
+/* =========================================================
+   BIZPILOT — SALES DELETE BUTTON
+   ========================================================= */
+
+.bizpilot-delete-sale {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin-left: 8px !important;
+    padding: 7px 11px !important;
+    min-height: 32px !important;
+    border: 1px solid #ffd5d5 !important;
+    border-radius: 8px !important;
+    background: #fff5f5 !important;
+    color: #d92d20 !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    transition: all .18s ease !important;
+}
+
+.bizpilot-delete-sale:hover {
+    background: #d92d20 !important;
+    border-color: #d92d20 !important;
+    color: #ffffff !important;
+    transform: translateY(-1px) !important;
+}
+
+.bizpilot-delete-sale:active {
+    transform: translateY(0) !important;
+}
+
+@media (max-width: 600px) {
+    .bizpilot-delete-sale {
+        padding: 7px 9px !important;
+        font-size: 10px !important;
+        margin-left: 5px !important;
+    }
+}
+/* =========================================================
+   BIZPILOT — UNIVERSAL DELETE BUTTON
+   ========================================================= */
+
+.bizpilot-delete-cell {
+    text-align: right !important;
+    white-space: nowrap !important;
+}
+
+.bizpilot-universal-delete {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 32px !important;
+    padding: 7px 11px !important;
+    border: 1px solid #ffd6d6 !important;
+    border-radius: 8px !important;
+    background: #fff6f6 !important;
+    color: #d92d20 !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    cursor: pointer !important;
+    transition: all .18s ease !important;
+}
+
+.bizpilot-universal-delete:hover {
+    background: #d92d20 !important;
+    border-color: #d92d20 !important;
+    color: #ffffff !important;
+    transform: translateY(-1px) !important;
+}
+
+.bizpilot-universal-delete:active {
+    transform: translateY(0) !important;
+}
+
+@media (max-width: 600px) {
+
+    .bizpilot-delete-cell {
+        padding: 8px !important;
+    }
+
+    .bizpilot-universal-delete {
+        min-height: 30px !important;
+        padding: 6px 9px !important;
+        font-size: 10px !important;
+    }
+
+}
+/* ============================================================
+   BIZPILOT DELETE BUTTON — FORCE VISIBLE
+   ============================================================ */
+
+.bizpilot-delete-manager-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    width: auto !important;
+    min-width: 150px !important;
+    height: 42px !important;
+
+    margin: 14px 0 !important;
+    padding: 10px 16px !important;
+
+    background: #ffffff !important;
+    color: #d62828 !important;
+
+    border: 1.5px solid #d62828 !important;
+    border-radius: 10px !important;
+
+    font-family: inherit !important;
+    font-size: 12px !important;
+    font-weight: 800 !important;
+
+    line-height: 1 !important;
+    text-align: center !important;
+
+    cursor: pointer !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+
+    position: relative !important;
+    z-index: 999 !important;
+
+    box-sizing: border-box !important;
+
+    box-shadow: 0 4px 12px rgba(214, 40, 40, 0.10) !important;
+
+    transition:
+        background .18s ease,
+        color .18s ease,
+        transform .18s ease,
+        box-shadow .18s ease !important;
+}
+
+.bizpilot-delete-manager-btn:hover {
+    background: #d62828 !important;
+    color: #ffffff !important;
+    border-color: #d62828 !important;
+
+    transform: translateY(-1px) !important;
+
+    box-shadow:
+        0 7px 18px rgba(214, 40, 40, 0.20) !important;
+}
+
+.bizpilot-delete-manager-btn:active {
+    transform: translateY(0) !important;
+}
+
+
+/* Make sure the sections themselves don't hide it */
+
+#sales,
+#expenses,
+#inventory,
+#customers,
+#invoices {
+    position: relative !important;
+}
+
+#sales .bizpilot-delete-manager-btn,
+#expenses .bizpilot-delete-manager-btn,
+#inventory .bizpilot-delete-manager-btn,
+#customers .bizpilot-delete-manager-btn,
+#invoices .bizpilot-delete-manager-btn {
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+
+/* Delete buttons inside the popup */
+
+.bizpilot-delete-one {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    min-width: 65px !important;
+    min-height: 34px !important;
+
+    padding: 7px 12px !important;
+
+    background: #fff1f1 !important;
+    color: #d62828 !important;
+
+    border: 1px solid #f0b8b8 !important;
+    border-radius: 8px !important;
+
+    font-family: inherit !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+
+    cursor: pointer !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.bizpilot-delete-one:hover {
+    background: #d62828 !important;
+    color: #ffffff !important;
+}
+
+
+/* Mobile */
+
+@media (max-width: 600px) {
+
+    .bizpilot-delete-manager-btn {
+        width: 100% !important;
+        min-width: 0 !important;
+        height: 44px !important;
+        margin: 12px 0 !important;
+    }
+
+}
