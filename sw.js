@@ -1,19 +1,20 @@
 /* =========================================================
    BIZPILOT — SERVICE WORKER
-   Makes the app installable and improves offline loading
    ========================================================= */
 
-const CACHE_NAME = "bizpilot-v1";
+const CACHE_NAME = "bizpilot-v2";
 
 const APP_FILES = [
     "./",
     "./index.html",
     "./style.css",
     "./app.js",
-    "./manifest.json"
+    "./manifest.json",
+    "./icon-192.png",
+    "./icon-512.png"
 ];
 
-/* Install */
+/* INSTALL */
 self.addEventListener("install", function (event) {
 
     event.waitUntil(
@@ -26,7 +27,7 @@ self.addEventListener("install", function (event) {
 });
 
 
-/* Activate */
+/* ACTIVATE */
 self.addEventListener("activate", function (event) {
 
     event.waitUntil(
@@ -49,23 +50,15 @@ self.addEventListener("activate", function (event) {
 });
 
 
-/* Fetch */
+/* FETCH */
 self.addEventListener("fetch", function (event) {
 
-    /*
-     * Let Supabase and other external services
-     * continue using the normal network.
-     */
-    if (
-        !event.request.url.startsWith(self.location.origin)
-    ) {
+    /* Keep external services such as Supabase on the network */
+    if (!event.request.url.startsWith(self.location.origin)) {
         return;
     }
 
-    /*
-     * For pages, try the network first.
-     * If offline, use the cached version.
-     */
+    /* Pages */
     if (event.request.mode === "navigate") {
 
         event.respondWith(
@@ -84,12 +77,9 @@ self.addEventListener("fetch", function (event) {
                 })
                 .catch(function () {
 
-                    return caches.match(
-                        event.request
-                    ).then(function (cached) {
+                    return caches.match(event.request).then(function (cached) {
 
-                        return cached ||
-                            caches.match("./index.html");
+                        return cached || caches.match("./index.html");
 
                     });
 
@@ -99,40 +89,31 @@ self.addEventListener("fetch", function (event) {
         return;
     }
 
-    /*
-     * For CSS, JS, images and other local files:
-     * use cache when available, otherwise network.
-     */
+    /* CSS, JS, images and other local files */
     event.respondWith(
 
         caches.match(event.request)
             .then(function (cached) {
 
-                return cached ||
-                    fetch(event.request).then(function (response) {
+                return cached || fetch(event.request).then(function (response) {
 
-                        if (
-                            response &&
-                            response.status === 200 &&
-                            response.type === "basic"
-                        ) {
+                    if (
+                        response &&
+                        response.status === 200 &&
+                        response.type === "basic"
+                    ) {
 
-                            const copy =
-                                response.clone();
+                        const copy = response.clone();
 
-                            caches.open(CACHE_NAME)
-                                .then(function (cache) {
-                                    cache.put(
-                                        event.request,
-                                        copy
-                                    );
-                                });
+                        caches.open(CACHE_NAME).then(function (cache) {
+                            cache.put(event.request, copy);
+                        });
 
-                        }
+                    }
 
-                        return response;
+                    return response;
 
-                    });
+                });
 
             })
 
