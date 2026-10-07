@@ -675,6 +675,7 @@ function getLiveDashboardDate() {
     });
 
 }
+
 function updatePageHeader(pageId) {
 
     const title =
@@ -684,12 +685,134 @@ function updatePageHeader(pageId) {
         document.getElementById("pageSubtitle");
 
 
+    /* =========================================================
+       LIVE DASHBOARD GREETING
+       ========================================================= */
+
+    function getLiveGreeting() {
+
+        const hour = new Date().getHours();
+
+        if (hour >= 5 && hour < 12) {
+            return "Good morning 👋";
+        }
+
+        if (hour >= 12 && hour < 17) {
+            return "Good afternoon 👋";
+        }
+
+        if (hour >= 17 && hour < 21) {
+            return "Good evening 👋";
+        }
+
+        return "Good night 🌙";
+    }
+
+
+    function getLiveDashboardDate() {
+
+        return new Date().toLocaleDateString("en-KE", {
+            weekday: "long",
+            month: "long",
+            day: "numeric",
+            year: "numeric"
+        });
+
+    }
+
+
+    /* =========================================================
+       GET LOGGED-IN USER NAME
+       ========================================================= */
+
+    function getDashboardUserName() {
+
+        let name = "";
+
+        try {
+
+            if (
+                window.currentUserName &&
+                String(window.currentUserName).trim()
+            ) {
+                name =
+                    String(window.currentUserName).trim();
+            }
+
+        } catch (error) {}
+
+
+        if (!name) {
+
+            try {
+
+                const user =
+                    window.currentUser;
+
+                if (user) {
+
+                    name =
+                        user.user_metadata?.full_name ||
+                        user.user_metadata?.name ||
+                        user.email?.split("@")[0] ||
+                        "";
+
+                }
+
+            } catch (error) {}
+
+        }
+
+
+        if (!name) {
+
+            try {
+
+                const storedUser =
+                    localStorage.getItem("bizpilot_user");
+
+                if (storedUser) {
+
+                    const parsed =
+                        JSON.parse(storedUser);
+
+                    name =
+                        parsed.full_name ||
+                        parsed.name ||
+                        parsed.email?.split("@")[0] ||
+                        "";
+
+                }
+
+            } catch (error) {}
+
+        }
+
+
+        return String(name || "").trim();
+
+    }
+
+
+    /* =========================================================
+       PAGE HEADERS
+       ========================================================= */
+
+    const userName =
+        getDashboardUserName();
+
+    const dashboardTitle =
+        userName
+            ? getLiveGreeting() + ", " + userName
+            : getLiveGreeting();
+
     const headers = {
 
-dashboard: [
-    getLiveGreeting(),
-    getLiveDashboardDate()
-],
+        dashboard: [
+            dashboardTitle,
+            getLiveDashboardDate()
+        ],
+
         sales: [
             "Sales",
             "Track your revenue and understand your performance."
@@ -20815,5 +20938,188 @@ if ("serviceWorker" in navigator) {
 
     /* Refresh once every minute */
     setInterval(updateBizPilotDate, 60000);
+
+})();
+/* =========================================================
+   BIZPILOT — LIVE DASHBOARD HEADER
+   Greeting + User Name + Day + Date
+   ========================================================= */
+
+(function () {
+
+    function updateLiveDashboardHeader() {
+
+        const title =
+            document.getElementById("pageTitle");
+
+        const subtitle =
+            document.getElementById("pageSubtitle");
+
+        if (!title || !subtitle) {
+            return;
+        }
+
+
+        /* Only change the header when Dashboard is active */
+        const dashboard =
+            document.getElementById("dashboard");
+
+        if (
+            dashboard &&
+            !dashboard.classList.contains("active")
+        ) {
+            return;
+        }
+
+
+        /* ===============================
+           REAL LOCAL TIME
+           =============================== */
+
+        const now =
+            new Date();
+
+        const hour =
+            now.getHours();
+
+
+        let greeting;
+
+        if (hour >= 5 && hour < 12) {
+
+            greeting =
+                "Good morning 👋";
+
+        } else if (hour >= 12 && hour < 17) {
+
+            greeting =
+                "Good afternoon 👋";
+
+        } else if (hour >= 17 && hour < 21) {
+
+            greeting =
+                "Good evening 👋";
+
+        } else {
+
+            greeting =
+                "Good night 🌙";
+
+        }
+
+
+        /* ===============================
+           GET LOGGED-IN USER NAME
+           =============================== */
+
+        let userName = "";
+
+
+        try {
+
+            if (
+                typeof currentUser !== "undefined" &&
+                currentUser &&
+                currentUser.user_metadata
+            ) {
+
+                userName =
+                    currentUser.user_metadata.name ||
+                    currentUser.user_metadata.full_name ||
+                    "";
+
+            }
+
+        } catch (error) {}
+
+
+        /* ===============================
+           FALLBACK NAME
+           =============================== */
+
+        if (!userName) {
+
+            try {
+
+                const accountName =
+                    document.querySelector(
+                        ".profile-name"
+                    );
+
+                if (accountName) {
+
+                    userName =
+                        accountName.textContent.trim();
+
+                }
+
+            } catch (error) {}
+
+        }
+
+
+        /* ===============================
+           BUILD TITLE
+           =============================== */
+
+        title.textContent =
+            userName
+                ? greeting + ", " + userName
+                : greeting;
+
+
+        /* ===============================
+           DAY + FULL DATE
+           =============================== */
+
+        subtitle.textContent =
+            now.toLocaleDateString("en-KE", {
+                weekday: "long",
+                month: "long",
+                day: "numeric",
+                year: "numeric"
+            });
+
+    }
+
+
+    /* Run immediately */
+    updateLiveDashboardHeader();
+
+
+    /* Keep it live */
+    setInterval(
+        updateLiveDashboardHeader,
+        30000
+    );
+
+
+    /* Run after the page changes */
+    document.addEventListener(
+        "click",
+        function () {
+
+            setTimeout(
+                updateLiveDashboardHeader,
+                100
+            );
+
+        }
+    );
+
+
+    /* Run after authentication finishes */
+    window.addEventListener(
+        "load",
+        function () {
+
+            setTimeout(
+                updateLiveDashboardHeader,
+                1000
+            );
+
+        }
+    );
+
 
 })();
