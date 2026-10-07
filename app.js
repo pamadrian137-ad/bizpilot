@@ -20567,3 +20567,33 @@ loadAuthSession();
         premiumInvoiceSummary;
 
 })();
+/* =========================================================
+   BIZPILOT — REGISTER SERVICE WORKER
+   ========================================================= */
+
+if ("serviceWorker" in navigator) {
+
+    window.addEventListener("load", function () {
+
+        navigator.serviceWorker
+            .register("./sw.js")
+            .then(function (registration) {
+
+                console.log(
+                    "BizPilot service worker registered:",
+                    registration.scope
+                );
+
+            })
+            .catch(function (error) {
+
+                console.error(
+                    "BizPilot service worker registration failed:",
+                    error
+                );
+
+            });
+
+    });
+
+}

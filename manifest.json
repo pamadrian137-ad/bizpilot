@@ -1,0 +1,12 @@
+{
+  "name": "BizPilot — Business Companion",
+  "short_name": "BizPilot",
+  "description": "Business management companion for Kenyan SMEs.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0396FF",
+  "orientation": "portrait",
+  "scope": "./",
+  "icons": []
+}
