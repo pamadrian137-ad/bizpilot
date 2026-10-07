@@ -641,8 +641,40 @@ function openPage(pageId) {
     }
 
 }
+/* =========================================================
+   BIZPILOT — LIVE GREETING + DATE
+   ========================================================= */
+
+function getLiveGreeting() {
+
+    const hour = new Date().getHours();
+
+    if (hour >= 5 && hour < 12) {
+        return "Good morning 👋";
+    }
+
+    if (hour >= 12 && hour < 17) {
+        return "Good afternoon 👋";
+    }
+
+    if (hour >= 17 && hour < 21) {
+        return "Good evening 👋";
+    }
+
+    return "Good night 🌙";
+}
 
 
+function getLiveDashboardDate() {
+
+    return new Date().toLocaleDateString("en-KE", {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+        year: "numeric"
+    });
+
+}
 function updatePageHeader(pageId) {
 
     const title =
@@ -654,11 +686,10 @@ function updatePageHeader(pageId) {
 
     const headers = {
 
-        dashboard: [
-            "Good evening 👋",
-            "Here's how your business is doing today."
-        ],
-
+dashboard: [
+    getLiveGreeting(),
+    getLiveDashboardDate()
+],
         sales: [
             "Sales",
             "Track your revenue and understand your performance."
@@ -20597,3 +20628,192 @@ if ("serviceWorker" in navigator) {
     });
 
 }
+/* =========================================================
+   BIZPILOT v3.0 — LIVE GREETING & DATE
+   ========================================================= */
+
+(function () {
+
+    function updateLiveGreeting() {
+
+        const now = new Date();
+        const hour = now.getHours();
+
+        let greeting = "Good morning";
+        let icon = "🌅";
+
+        if (hour >= 12 && hour < 17) {
+            greeting = "Good afternoon";
+            icon = "☀️";
+        } 
+        else if (hour >= 17 && hour < 21) {
+            greeting = "Good evening";
+            icon = "🌆";
+        } 
+        else if (hour >= 21 || hour < 5) {
+            greeting = "Good night";
+            icon = "🌙";
+        }
+
+        const day = now.toLocaleDateString("en-KE", {
+            weekday: "long"
+        });
+
+        const date = now.toLocaleDateString("en-KE", {
+            month: "long",
+            day: "numeric",
+            year: "numeric"
+        });
+
+        /*
+         * Try several common greeting elements
+         * without changing your existing layout.
+         */
+
+        const greetingElements = [
+            document.getElementById("greeting"),
+            document.getElementById("welcomeGreeting"),
+            document.getElementById("dashboardGreeting")
+        ];
+
+        let greetingElement = null;
+
+        for (let i = 0; i < greetingElements.length; i++) {
+            if (greetingElements[i]) {
+                greetingElement = greetingElements[i];
+                break;
+            }
+        }
+
+        if (greetingElement) {
+            greetingElement.textContent =
+                greeting + ", " +
+                (window.currentUserName || "there");
+        }
+
+        /*
+         * Find an existing greeting heading if the
+         * dashboard does not use a specific ID.
+         */
+
+        if (!greetingElement) {
+
+            const headings =
+                document.querySelectorAll(
+                    "#dashboard h1, #dashboard h2, #home h1, #home h2"
+                );
+
+            headings.forEach(function (heading) {
+
+                const text =
+                    heading.textContent
+                        .trim()
+                        .toLowerCase();
+
+                if (
+                    text.includes("good morning") ||
+                    text.includes("good afternoon") ||
+                    text.includes("good evening") ||
+                    text.includes("good night")
+                ) {
+
+                    heading.textContent =
+                        greeting + ", " +
+                        (window.currentUserName || "there");
+
+                }
+
+            });
+
+        }
+
+        /*
+         * Update a date element if one already exists.
+         */
+
+        const dateElements = [
+            document.getElementById("currentDate"),
+            document.getElementById("dashboardDate"),
+            document.getElementById("todayDate")
+        ];
+
+        let dateElement = null;
+
+        for (let i = 0; i < dateElements.length; i++) {
+            if (dateElements[i]) {
+                dateElement = dateElements[i];
+                break;
+            }
+        }
+
+        if (dateElement) {
+            dateElement.textContent =
+                day + ", " + date;
+        }
+
+        /*
+         * Save the current greeting globally so
+         * other BizPilot features can use it.
+         */
+
+        window.bizPilotGreeting = greeting;
+        window.bizPilotToday = day + ", " + date;
+
+    }
+
+    updateLiveGreeting();
+
+    /*
+     * Check every minute so the greeting changes
+     * automatically while the app is open.
+     */
+
+    setInterval(updateLiveGreeting, 60000);
+
+})();
+/* =========================================================
+   BIZPILOT v3.0 — LIVE DASHBOARD DATE
+   ========================================================= */
+
+(function () {
+
+    function updateBizPilotDate() {
+
+        const now = new Date();
+
+        const dayName = now.toLocaleDateString("en-KE", {
+            weekday: "long"
+        });
+
+        const fullDate = now.toLocaleDateString("en-KE", {
+            month: "long",
+            day: "numeric",
+            year: "numeric"
+        });
+
+        const dateText = dayName + ", " + fullDate;
+
+        const possibleDateElements = [
+            document.getElementById("currentDate"),
+            document.getElementById("dashboardDate"),
+            document.getElementById("todayDate")
+        ];
+
+        possibleDateElements.forEach(function (element) {
+
+            if (element) {
+                element.textContent = dateText;
+            }
+
+        });
+
+        window.bizPilotToday = dateText;
+
+    }
+
+    updateBizPilotDate();
+
+    /* Refresh once every minute */
+    setInterval(updateBizPilotDate, 60000);
+
+})();
