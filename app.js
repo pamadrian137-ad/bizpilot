@@ -43,7 +43,7 @@ let appData = JSON.parse(
 
     business: {
         name: "My Business",
-        currency: "KSh"
+        currency: "Ksh"
     },
 
     sales: [],
@@ -63,7 +63,7 @@ let appData = JSON.parse(
 
 appData.business = appData.business || {
     name: "My Business",
-    currency: "KSh"
+    currency: "Ksh"
 };
 
 appData.sales = Array.isArray(appData.sales)
@@ -328,7 +328,7 @@ async function loadCloudData() {
                 business:
                     cloudData.business || {
                         name: "My Business",
-                        currency: "KSh"
+                        currency: "Ksh"
                     },
 
                 sales:
@@ -432,7 +432,7 @@ function resetAppDataForLogout() {
 
         business: {
             name: "My Business",
-            currency: "KSh"
+            currency: "Ksh"
         },
 
         sales: [],
@@ -676,6 +676,77 @@ function getLiveDashboardDate() {
 
 }
 
+
+function getDashboardUserName() {
+
+    let name = "";
+
+    try {
+
+        if (
+            typeof currentUser !== "undefined" &&
+            currentUser
+        ) {
+
+            name =
+                currentUser.user_metadata?.full_name ||
+                currentUser.user_metadata?.name ||
+                currentUser.email?.split("@")[0] ||
+                "";
+        }
+
+    } catch (error) {}
+
+
+    if (!name) {
+
+        try {
+
+            if (
+                window.currentUserName &&
+                String(window.currentUserName).trim()
+            ) {
+
+                name =
+                    String(window.currentUserName).trim();
+
+            }
+
+        } catch (error) {}
+
+    }
+
+
+    if (!name) {
+
+        try {
+
+            const storedUser =
+                localStorage.getItem("bizpilot_user");
+
+            if (storedUser) {
+
+                const parsed =
+                    JSON.parse(storedUser);
+
+                name =
+                    parsed.full_name ||
+                    parsed.name ||
+                    parsed.email?.split("@")[0] ||
+                    "";
+
+            }
+
+        } catch (error) {}
+
+    }
+
+
+    return String(name || "").trim();
+
+}
+
+
 function updatePageHeader(pageId) {
 
     const title =
@@ -685,133 +756,40 @@ function updatePageHeader(pageId) {
         document.getElementById("pageSubtitle");
 
 
-    /* =========================================================
-       LIVE DASHBOARD GREETING
-       ========================================================= */
-
-    function getLiveGreeting() {
-
-        const hour = new Date().getHours();
-
-        if (hour >= 5 && hour < 12) {
-            return "Good morning 👋";
-        }
-
-        if (hour >= 12 && hour < 17) {
-            return "Good afternoon 👋";
-        }
-
-        if (hour >= 17 && hour < 21) {
-            return "Good evening 👋";
-        }
-
-        return "Good night 🌙";
+    if (!title || !subtitle) {
+        return;
     }
 
 
-    function getLiveDashboardDate() {
+    /* =====================================================
+       DASHBOARD — LIVE GREETING
+       ===================================================== */
 
-        return new Date().toLocaleDateString("en-KE", {
-            weekday: "long",
-            month: "long",
-            day: "numeric",
-            year: "numeric"
-        });
+    if (pageId === "dashboard") {
 
+        const userName =
+            getDashboardUserName();
+
+        const greeting =
+            getLiveGreeting();
+
+        title.textContent =
+            userName
+                ? greeting + ", " + userName
+                : greeting;
+
+        subtitle.textContent =
+            getLiveDashboardDate();
+
+        return;
     }
 
 
-    /* =========================================================
-       GET LOGGED-IN USER NAME
-       ========================================================= */
-
-    function getDashboardUserName() {
-
-        let name = "";
-
-        try {
-
-            if (
-                window.currentUserName &&
-                String(window.currentUserName).trim()
-            ) {
-                name =
-                    String(window.currentUserName).trim();
-            }
-
-        } catch (error) {}
-
-
-        if (!name) {
-
-            try {
-
-                const user =
-                    window.currentUser;
-
-                if (user) {
-
-                    name =
-                        user.user_metadata?.full_name ||
-                        user.user_metadata?.name ||
-                        user.email?.split("@")[0] ||
-                        "";
-
-                }
-
-            } catch (error) {}
-
-        }
-
-
-        if (!name) {
-
-            try {
-
-                const storedUser =
-                    localStorage.getItem("bizpilot_user");
-
-                if (storedUser) {
-
-                    const parsed =
-                        JSON.parse(storedUser);
-
-                    name =
-                        parsed.full_name ||
-                        parsed.name ||
-                        parsed.email?.split("@")[0] ||
-                        "";
-
-                }
-
-            } catch (error) {}
-
-        }
-
-
-        return String(name || "").trim();
-
-    }
-
-
-    /* =========================================================
-       PAGE HEADERS
-       ========================================================= */
-
-    const userName =
-        getDashboardUserName();
-
-    const dashboardTitle =
-        userName
-            ? getLiveGreeting() + ", " + userName
-            : getLiveGreeting();
+    /* =====================================================
+       OTHER PAGES
+       ===================================================== */
 
     const headers = {
-
-        dashboard: [
-            dashboardTitle,
-            getLiveDashboardDate()
-        ],
 
         sales: [
             "Sales",
@@ -858,19 +836,11 @@ function updatePageHeader(pageId) {
 
     if (headers[pageId]) {
 
-        if (title) {
+        title.textContent =
+            headers[pageId][0];
 
-            title.textContent =
-                headers[pageId][0];
-
-        }
-
-        if (subtitle) {
-
-            subtitle.textContent =
-                headers[pageId][1];
-
-        }
+        subtitle.textContent =
+            headers[pageId][1];
 
     }
 
@@ -915,7 +885,6 @@ document
         }
 
     });
-
 
 /* =========================================================
    MOBILE MENU
@@ -20942,114 +20911,489 @@ if ("serviceWorker" in navigator) {
 })();
 /* =========================================================
    BIZPILOT — LIVE DASHBOARD HEADER
-   Greeting + User Name + Day + Date
+   Safe refresh for the existing updatePageHeader system
    ========================================================= */
 
 (function () {
 
-    function updateLiveDashboardHeader() {
+    function refreshLiveDashboardHeader() {
 
-        const title =
-            document.getElementById("pageTitle");
-
-        const subtitle =
-            document.getElementById("pageSubtitle");
-
-        if (!title || !subtitle) {
-            return;
-        }
-
-
-        /* Only change the header when Dashboard is active */
         const dashboard =
             document.getElementById("dashboard");
 
         if (
-            dashboard &&
+            !dashboard ||
             !dashboard.classList.contains("active")
         ) {
             return;
         }
 
+        if (
+            typeof updatePageHeader === "function"
+        ) {
 
-        /* ===============================
-           REAL LOCAL TIME
-           =============================== */
+            updatePageHeader("dashboard");
 
-        const now =
-            new Date();
+        }
 
-        const hour =
-            now.getHours();
+    }
 
 
-        let greeting;
+    /* Run after the app has loaded */
+    window.addEventListener(
+        "load",
+        function () {
 
-        if (hour >= 5 && hour < 12) {
+            setTimeout(
+                refreshLiveDashboardHeader,
+                500
+            );
 
-            greeting =
-                "Good morning 👋";
+        }
+    );
 
-        } else if (hour >= 12 && hour < 17) {
 
-            greeting =
-                "Good afternoon 👋";
+    /* Keep the greeting/date current */
+    setInterval(
+        refreshLiveDashboardHeader,
+        30000
+    );
 
-        } else if (hour >= 17 && hour < 21) {
 
-            greeting =
-                "Good evening 👋";
+    /* Refresh after navigation */
+    document.addEventListener(
+        "click",
+        function () {
 
-        } else {
+            setTimeout(
+                refreshLiveDashboardHeader,
+                150
+            );
 
-            greeting =
-                "Good night 🌙";
+        }
+    );
+
+})();
+/* =========================================================
+   BIZPILOT — MULTI-CURRENCY SYSTEM
+   ========================================================= */
+
+(function () {
+
+    const currencySymbols = {
+        Ksh: "KSh",
+        TSh: "TSh",
+        Ush: "USh",
+        RWF: "FRw",
+        BIF: "FBu",
+        USD: "$",
+        EUR: "€",
+        GBP: "£",
+        ZAR: "R",
+        NGN: "₦",
+        GHS: "GH₵"
+    };
+
+
+    function getBizPilotCurrency() {
+
+        const selector =
+            document.getElementById("currency");
+
+        if (selector && selector.value) {
+            return selector.value;
+        }
+
+        return localStorage.getItem(
+            "bizpilot_currency"
+        ) || "Ksh";
+
+    }
+
+
+    function getBizPilotCurrencySymbol() {
+
+        const currency =
+            getBizPilotCurrency();
+
+        return currencySymbols[currency] || "KSh";
+
+    }
+
+
+    function formatBizPilotMoney(amount) {
+
+        const number =
+            Number(amount) || 0;
+
+        return (
+            getBizPilotCurrencySymbol() +
+            " " +
+            number.toLocaleString("en-US", {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2
+            })
+        );
+
+    }
+
+
+    function saveBizPilotCurrency() {
+
+        const selector =
+            document.getElementById("currency");
+
+        if (!selector) return;
+
+        localStorage.setItem(
+            "bizpilot_currency",
+            selector.value
+        );
+
+    }
+
+
+    function loadBizPilotCurrency() {
+
+        const selector =
+            document.getElementById("currency");
+
+        if (!selector) return;
+
+        const savedCurrency =
+            localStorage.getItem(
+                "bizpilot_currency"
+            );
+
+        if (
+            savedCurrency &&
+            selector.querySelector(
+                `option[value="${savedCurrency}"]`
+            )
+        ) {
+
+            selector.value =
+                savedCurrency;
+
+        }
+
+    }
+
+
+    function refreshCurrencyDisplay() {
+
+        /*
+         * Refresh the existing app so all
+         * financial displays are recalculated.
+         */
+
+        if (
+            typeof refreshApp === "function"
+        ) {
+
+            refreshApp();
+
+        }
+
+    }
+
+
+    function setupBizPilotCurrency() {
+
+        const selector =
+            document.getElementById("currency");
+
+        if (!selector) return;
+
+        loadBizPilotCurrency();
+
+        selector.addEventListener(
+            "change",
+            function () {
+
+                saveBizPilotCurrency();
+
+                refreshCurrencyDisplay();
+
+                if (
+                    typeof showToast === "function"
+                ) {
+
+                    showToast(
+                        "Currency updated to " +
+                        getBizPilotCurrencySymbol()
+                    );
+
+                }
+
+            }
+        );
+
+    }
+
+
+    window.getBizPilotCurrency =
+        getBizPilotCurrency;
+
+    window.getBizPilotCurrencySymbol =
+        getBizPilotCurrencySymbol;
+
+    window.formatBizPilotMoney =
+        formatBizPilotMoney;
+
+
+    if (
+        document.readyState === "loading"
+    ) {
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            setupBizPilotCurrency
+        );
+
+    } else {
+
+        setupBizPilotCurrency();
+
+    }
+
+})();
+/* =========================================================
+   BIZPILOT — GLOBAL MULTI-CURRENCY DISPLAY
+   Changes displayed currency without changing calculations
+   ========================================================= */
+
+(function () {
+
+    const currencyMap = {
+        Ksh: {
+            symbol: "Ksh",
+            name: "Kenyan Shilling"
+        },
+
+        TSh: {
+            symbol: "TSh",
+            name: "Tanzanian Shilling"
+        },
+
+        Ush: {
+            symbol: "Ush",
+            name: "Ugandan Shilling"
+        },
+
+        RWF: {
+            symbol: "RWF",
+            name: "Rwandan Franc"
+        },
+
+        BIF: {
+            symbol: "BIF",
+            name: "Burundian Franc"
+        },
+
+        USD: {
+            symbol: "$",
+            name: "US Dollar"
+        },
+
+        EUR: {
+            symbol: "€",
+            name: "Euro"
+        },
+
+        GBP: {
+            symbol: "£",
+            name: "British Pound"
+        },
+
+        ZAR: {
+            symbol: "R",
+            name: "South African Rand"
+        },
+
+        NGN: {
+            symbol: "₦",
+            name: "Nigerian Naira"
+        },
+
+        GHS: {
+            symbol: "GH₵",
+            name: "Ghanaian Cedi"
+        }
+    };
+
+
+    function getSelectedBizPilotCurrency() {
+
+        const selector =
+            document.getElementById("currency");
+
+        if (selector && selector.value) {
+            return selector.value;
+        }
+
+        if (
+            typeof appData !== "undefined" &&
+            appData.business &&
+            appData.business.currency
+        ) {
+            return appData.business.currency;
+        }
+
+        return (
+            localStorage.getItem(
+                "bizpilot_currency"
+            ) || "Ksh"
+        );
+
+    }
+
+
+    function getSelectedCurrencySymbol() {
+
+        const currency =
+            getSelectedBizPilotCurrency();
+
+        return currencyMap[currency]?.symbol || "Ksh";
+
+    }
+
+
+    function replaceKshText() {
+
+        const symbol =
+            getSelectedCurrencySymbol();
+
+        /*
+         * Only replace visible text.
+         * Calculations remain untouched.
+         */
+
+        const walker =
+            document.createTreeWalker(
+                document.body,
+                NodeFilter.SHOW_TEXT
+            );
+
+        const nodes = [];
+
+        let node;
+
+        while (
+            node = walker.nextNode()
+        ) {
+
+            if (
+                node.nodeValue &&
+                /KSh|Ksh/.test(node.nodeValue)
+            ) {
+
+                nodes.push(node);
+
+            }
 
         }
 
 
-        /* ===============================
-           GET LOGGED-IN USER NAME
-           =============================== */
+        nodes.forEach(function (textNode) {
 
-        let userName = "";
+            textNode.nodeValue =
+                textNode.nodeValue.replace(
+                    /\bKSh\b|\bKsh\b/g,
+                    symbol
+                );
 
+        });
+
+    }
+
+
+    function saveSelectedCurrency() {
+
+        const selector =
+            document.getElementById("currency");
+
+        if (!selector) return;
+
+        const selected =
+            selector.value;
+
+        localStorage.setItem(
+            "bizpilot_currency",
+            selected
+        );
+
+
+        /*
+         * Keep the existing appData
+         * business setting synchronized.
+         */
 
         try {
 
             if (
-                typeof currentUser !== "undefined" &&
-                currentUser &&
-                currentUser.user_metadata
+                typeof appData !== "undefined"
             ) {
 
-                userName =
-                    currentUser.user_metadata.name ||
-                    currentUser.user_metadata.full_name ||
-                    "";
+                if (!appData.business) {
+                    appData.business = {};
+                }
+
+                appData.business.currency =
+                    selected;
+
+                if (
+                    typeof saveData === "function"
+                ) {
+                    saveData();
+                }
 
             }
 
-        } catch (error) {}
+        } catch (error) {
+
+            console.warn(
+                "BizPilot currency save warning:",
+                error
+            );
+
+        }
 
 
-        /* ===============================
-           FALLBACK NAME
-           =============================== */
+        setTimeout(
+            replaceKshText,
+            100
+        );
 
-        if (!userName) {
+    }
+
+
+    function loadSelectedCurrency() {
+
+        const selector =
+            document.getElementById("currency");
+
+        if (!selector) return;
+
+
+        let savedCurrency =
+            localStorage.getItem(
+                "bizpilot_currency"
+            );
+
+
+        if (!savedCurrency) {
 
             try {
 
-                const accountName =
-                    document.querySelector(
-                        ".profile-name"
-                    );
+                if (
+                    typeof appData !== "undefined" &&
+                    appData.business &&
+                    appData.business.currency
+                ) {
 
-                if (accountName) {
-
-                    userName =
-                        accountName.textContent.trim();
+                    savedCurrency =
+                        appData.business.currency;
 
                 }
 
@@ -21058,49 +21402,2384 @@ if ("serviceWorker" in navigator) {
         }
 
 
-        /* ===============================
-           BUILD TITLE
-           =============================== */
+        if (
+            savedCurrency &&
+            selector.querySelector(
+                'option[value="' +
+                savedCurrency +
+                '"]'
+            )
+        ) {
 
-        title.textContent =
-            userName
-                ? greeting + ", " + userName
-                : greeting;
+            selector.value =
+                savedCurrency;
 
-
-        /* ===============================
-           DAY + FULL DATE
-           =============================== */
-
-        subtitle.textContent =
-            now.toLocaleDateString("en-KE", {
-                weekday: "long",
-                month: "long",
-                day: "numeric",
-                year: "numeric"
-            });
+        }
 
     }
 
 
-    /* Run immediately */
-    updateLiveDashboardHeader();
+    function setupMultiCurrency() {
+
+        const selector =
+            document.getElementById("currency");
+
+        if (!selector) return;
 
 
-    /* Keep it live */
-    setInterval(
-        updateLiveDashboardHeader,
-        30000
+        loadSelectedCurrency();
+
+
+        selector.addEventListener(
+            "change",
+            function () {
+
+                saveSelectedCurrency();
+
+                if (
+                    typeof showToast === "function"
+                ) {
+
+                    showToast(
+                        "Currency changed to " +
+                        getSelectedCurrencySymbol()
+                    );
+
+                }
+
+            }
+        );
+
+
+        setTimeout(
+            replaceKshText,
+            300
+        );
+
+    }
+
+
+    /*
+     * Expose useful functions for the rest
+     * of BizPilot.
+     */
+
+    window.getSelectedBizPilotCurrency =
+        getSelectedBizPilotCurrency;
+
+    window.getSelectedCurrencySymbol =
+        getSelectedCurrencySymbol;
+
+    window.replaceKshText =
+        replaceKshText;
+
+
+    if (
+        document.readyState === "loading"
+    ) {
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            setupMultiCurrency
+        );
+
+    } else {
+
+        setupMultiCurrency();
+
+    }
+
+
+    /*
+     * Re-apply after BizPilot refreshes
+     * dynamic dashboard content.
+     */
+
+    const originalRefreshApp =
+        window.refreshApp;
+
+    if (
+        typeof originalRefreshApp === "function"
+    ) {
+
+        window.refreshApp =
+            function () {
+
+                const result =
+                    originalRefreshApp.apply(
+                        this,
+                        arguments
+                    );
+
+                setTimeout(
+                    replaceKshText,
+                    150
+                );
+
+                return result;
+
+            };
+
+    }
+
+
+    /*
+     * Watch dynamic content.
+     */
+
+    const observer =
+        new MutationObserver(
+            function () {
+
+                clearTimeout(
+                    window.bizPilotCurrencyTimer
+                );
+
+                window.bizPilotCurrencyTimer =
+                    setTimeout(
+                        replaceKshText,
+                        100
+                    );
+
+            }
+        );
+
+
+    observer.observe(
+        document.body,
+        {
+            childList: true,
+            subtree: true
+        }
     );
 
+})();
+/* =========================================================
+   BIZPILOT — PREMIUM CURRENCY PICKER ENGINE
+   ========================================================= */
 
-    /* Run after the page changes */
-    document.addEventListener(
-        "click",
+/* =========================================================
+   BIZPILOT — FINAL CURRENCY COMPATIBILITY
+   Kenya = KES / KSh
+   Keeps all existing BizPilot systems working
+   ========================================================= */
+
+(function () {
+
+    const FINAL_CURRENCY_MAP = {
+
+        KES: {
+            symbol: "KSh",
+            name: "Kenyan Shilling",
+            flag: "🇰🇪"
+        },
+
+        TSh: {
+            symbol: "TSh",
+            name: "Tanzanian Shilling",
+            flag: "🇹🇿"
+        },
+
+        Ush: {
+            symbol: "Ush",
+            name: "Ugandan Shilling",
+            flag: "🇺🇬"
+        },
+
+        RWF: {
+            symbol: "RWF",
+            name: "Rwandan Franc",
+            flag: "🇷🇼"
+        },
+
+        BIF: {
+            symbol: "BIF",
+            name: "Burundian Franc",
+            flag: "🇧🇮"
+        },
+
+        USD: {
+            symbol: "$",
+            name: "US Dollar",
+            flag: "🇺🇸"
+        },
+
+        EUR: {
+            symbol: "€",
+            name: "Euro",
+            flag: "🇪🇺"
+        },
+
+        GBP: {
+            symbol: "£",
+            name: "British Pound",
+            flag: "🇬🇧"
+        },
+
+        ZAR: {
+            symbol: "R",
+            name: "South African Rand",
+            flag: "🇿🇦"
+        },
+
+        NGN: {
+            symbol: "₦",
+            name: "Nigerian Naira",
+            flag: "🇳🇬"
+        },
+
+        GHS: {
+            symbol: "GH₵",
+            name: "Ghanaian Cedi",
+            flag: "🇬🇭"
+        }
+
+    };
+
+
+    /* ---------------------------------------------------------
+       GET CURRENT CURRENCY
+       --------------------------------------------------------- */
+
+    function getFinalCurrency() {
+
+        const select = document.getElementById("currency");
+
+        let currency = "";
+
+        if (select && select.value) {
+            currency = select.value;
+        }
+
+        if (!currency) {
+            currency =
+                localStorage.getItem("bizpilot_currency") || "";
+        }
+
+        if (!currency) {
+            try {
+
+                if (
+                    typeof appData !== "undefined" &&
+                    appData.business &&
+                    appData.business.currency
+                ) {
+                    currency =
+                        appData.business.currency;
+                }
+
+            } catch (error) {}
+        }
+
+
+        /*
+         * OLD BizPilot installations may still contain Ksh.
+         * Convert that legacy value to the proper KES code.
+         */
+
+        if (
+            currency === "Ksh" ||
+            currency === "KSH" ||
+            currency === "KES"
+        ) {
+            return "KES";
+        }
+
+
+        return FINAL_CURRENCY_MAP[currency]
+            ? currency
+            : "KES";
+
+    }
+
+
+    /* ---------------------------------------------------------
+       GET SYMBOL
+       --------------------------------------------------------- */
+
+    function getFinalCurrencySymbol() {
+
+        const currency = getFinalCurrency();
+
+        return FINAL_CURRENCY_MAP[currency]
+            ? FINAL_CURRENCY_MAP[currency].symbol
+            : "KSh";
+
+    }
+
+
+    /* ---------------------------------------------------------
+       FORMAT MONEY
+       --------------------------------------------------------- */
+
+    function formatFinalMoney(amount) {
+
+        const number = Number(amount) || 0;
+
+        return (
+            getFinalCurrencySymbol() +
+            " " +
+            number.toLocaleString("en-US", {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2
+            })
+        );
+
+    }
+
+
+    /* ---------------------------------------------------------
+       SAVE CURRENCY
+       --------------------------------------------------------- */
+
+    function saveFinalCurrency(value) {
+
+        let currency = value || "KES";
+
+
+        /*
+         * Convert old Ksh value to proper KES.
+         */
+
+        if (
+            currency === "Ksh" ||
+            currency === "KSH"
+        ) {
+            currency = "KES";
+        }
+
+
+        localStorage.setItem(
+            "bizpilot_currency",
+            currency
+        );
+
+
+        try {
+
+            if (typeof appData !== "undefined") {
+
+                if (!appData.business) {
+                    appData.business = {};
+                }
+
+                appData.business.currency = currency;
+
+                if (
+                    typeof saveData === "function"
+                ) {
+                    saveData();
+                }
+
+            }
+
+        } catch (error) {
+
+            console.warn(
+                "BizPilot currency save warning:",
+                error
+            );
+
+        }
+
+    }
+
+
+    /* ---------------------------------------------------------
+       UPDATE PREMIUM PICKER
+       --------------------------------------------------------- */
+
+    function updateFinalCurrencyPicker() {
+
+        const picker =
+            document.getElementById(
+                "premiumCurrencyPicker"
+            );
+
+        const select =
+            document.getElementById("currency");
+
+        if (!picker || !select) {
+            return;
+        }
+
+
+        const trigger =
+            document.getElementById(
+                "premiumCurrencyTrigger"
+            );
+
+        const flag =
+            document.getElementById(
+                "premiumCurrencyFlag"
+            );
+
+        const name =
+            document.getElementById(
+                "premiumCurrencyName"
+            );
+
+        const code =
+            document.getElementById(
+                "premiumCurrencyCode"
+            );
+
+        const options =
+            picker.querySelectorAll(
+                ".premium-currency-option"
+            );
+
+
+        let currency = getFinalCurrency();
+
+
+        /*
+         * Keep hidden select synchronized.
+         */
+
+        if (
+            select.querySelector(
+                'option[value="' + currency + '"]'
+            )
+        ) {
+            select.value = currency;
+        }
+
+
+        const currencyInfo =
+            FINAL_CURRENCY_MAP[currency] ||
+            FINAL_CURRENCY_MAP.KES;
+
+
+        if (flag) {
+            flag.textContent =
+                currencyInfo.flag;
+        }
+
+
+        if (name) {
+            name.textContent =
+                currencyInfo.name;
+        }
+
+
+        if (code) {
+
+            code.textContent =
+                currencyInfo.symbol +
+                " · " +
+                (
+                    currency === "KES"
+                        ? "Kenya · KES"
+                        : currency
+                );
+
+        }
+
+
+        options.forEach(function (option) {
+
+            option.classList.toggle(
+                "selected",
+                option.dataset.currency === currency
+            );
+
+        });
+
+    }
+
+
+    /* ---------------------------------------------------------
+       REPLACE LEGACY KSH DISPLAY TEXT
+       --------------------------------------------------------- */
+
+    function refreshFinalCurrencyText() {
+
+        const symbol =
+            getFinalCurrencySymbol();
+
+
+        const walker =
+            document.createTreeWalker(
+                document.body,
+                NodeFilter.SHOW_TEXT
+            );
+
+
+        const nodes = [];
+
+        let node;
+
+
+        while (
+            node = walker.nextNode()
+        ) {
+
+            if (
+                node.nodeValue &&
+                /KSh|Ksh/.test(
+                    node.nodeValue
+                )
+            ) {
+
+                nodes.push(node);
+
+            }
+
+        }
+
+
+        nodes.forEach(function (textNode) {
+
+            textNode.nodeValue =
+                textNode.nodeValue.replace(
+                    /\bKSh\b|\bKsh\b/g,
+                    symbol
+                );
+
+        });
+
+    }
+
+
+    /* ---------------------------------------------------------
+       CONNECT PREMIUM PICKER
+       --------------------------------------------------------- */
+
+    function setupFinalCurrencySystem() {
+
+        const select =
+            document.getElementById("currency");
+
+        const picker =
+            document.getElementById(
+                "premiumCurrencyPicker"
+            );
+
+        if (!select || !picker) {
+            return;
+        }
+
+
+        /*
+         * Migrate old saved Ksh accounts to KES.
+         */
+
+        let savedCurrency =
+            localStorage.getItem(
+                "bizpilot_currency"
+            );
+
+
+        if (
+            savedCurrency === "Ksh" ||
+            savedCurrency === "KSH"
+        ) {
+
+            savedCurrency = "KES";
+
+            localStorage.setItem(
+                "bizpilot_currency",
+                "KES"
+            );
+
+        }
+
+
+        /*
+         * If nothing exists, Kenya is the default.
+         */
+
+        if (!savedCurrency) {
+
+            savedCurrency = "KES";
+
+            localStorage.setItem(
+                "bizpilot_currency",
+                "KES"
+            );
+
+        }
+
+
+        /*
+         * Apply saved currency.
+         */
+
+        if (
+            select.querySelector(
+                'option[value="' +
+                savedCurrency +
+                '"]'
+            )
+        ) {
+
+            select.value =
+                savedCurrency;
+
+        } else {
+
+            select.value = "KES";
+
+        }
+
+
+        /*
+         * Currency option buttons.
+         */
+
+        const options =
+            picker.querySelectorAll(
+                ".premium-currency-option"
+            );
+
+
+        options.forEach(function (option) {
+
+            option.addEventListener(
+                "click",
+                function (event) {
+
+                    event.preventDefault();
+                    event.stopPropagation();
+
+
+                    const selected =
+                        option.dataset.currency;
+
+
+                    if (!selected) {
+                        return;
+                    }
+
+
+                    select.value =
+                        selected;
+
+
+                    saveFinalCurrency(
+                        selected
+                    );
+
+
+                    updateFinalCurrencyPicker();
+
+
+                    /*
+                     * Close menu.
+                     */
+
+                    picker.classList.remove(
+                        "open"
+                    );
+
+
+                    /*
+                     * Refresh the existing
+                     * BizPilot interface.
+                     */
+
+                    setTimeout(function () {
+
+                        if (
+                            typeof refreshApp ===
+                            "function"
+                        ) {
+
+                            refreshApp();
+
+                        }
+
+                        updateFinalCurrencyPicker();
+
+                        refreshFinalCurrencyText();
+
+                    }, 100);
+
+
+                    if (
+                        typeof showToast ===
+                        "function"
+                    ) {
+
+                        showToast(
+                            "Currency changed to " +
+                            getFinalCurrencySymbol()
+                        );
+
+                    }
+
+                }
+            );
+
+        });
+
+
+        /*
+         * Also support the hidden select
+         * if another existing BizPilot
+         * function changes it.
+         */
+
+        select.addEventListener(
+            "change",
+            function () {
+
+                saveFinalCurrency(
+                    select.value
+                );
+
+
+                updateFinalCurrencyPicker();
+
+
+                setTimeout(
+                    refreshFinalCurrencyText,
+                    100
+                );
+
+            }
+        );
+
+
+        /*
+         * Initial display.
+         */
+
+        updateFinalCurrencyPicker();
+
+
+        setTimeout(
+            refreshFinalCurrencyText,
+            300
+        );
+
+    }
+
+
+    /* ---------------------------------------------------------
+       PUBLIC FUNCTIONS
+       --------------------------------------------------------- */
+
+    window.getFinalCurrency =
+        getFinalCurrency;
+
+    window.getFinalCurrencySymbol =
+        getFinalCurrencySymbol;
+
+    window.formatFinalMoney =
+        formatFinalMoney;
+
+    window.saveFinalCurrency =
+        saveFinalCurrency;
+
+    window.updateFinalCurrencyPicker =
+        updateFinalCurrencyPicker;
+
+
+    /* ---------------------------------------------------------
+       START
+       --------------------------------------------------------- */
+
+    if (
+        document.readyState ===
+        "loading"
+    ) {
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+
+                setTimeout(
+                    setupFinalCurrencySystem,
+                    100
+                );
+
+            }
+        );
+
+    } else {
+
+        setTimeout(
+            setupFinalCurrencySystem,
+            100
+        );
+
+    }
+
+
+})();
+/* =========================================================
+   BIZPILOT — SINGLE PREMIUM CURRENCY PICKER
+   FINAL CLEAN VERSION
+   ========================================================= */
+
+(function () {
+
+    function initBizPilotCurrencyPicker() {
+
+        const picker = document.getElementById("premiumCurrencyPicker");
+        const trigger = document.getElementById("premiumCurrencyTrigger");
+        const menu = document.getElementById("premiumCurrencyMenu");
+        const select = document.getElementById("currency");
+
+        const flag = document.getElementById("premiumCurrencyFlag");
+        const name = document.getElementById("premiumCurrencyName");
+        const code = document.getElementById("premiumCurrencyCode");
+
+        if (!picker || !trigger || !menu || !select) {
+            console.error("BizPilot: Currency picker HTML not found.");
+            return;
+        }
+
+        const currencies = {
+            KES: {
+                name: "Kenyan Shilling",
+                symbol: "KSh",
+                country: "Kenya",
+                flag: "🇰🇪"
+            },
+            TSh: {
+                name: "Tanzanian Shilling",
+                symbol: "TSh",
+                country: "Tanzania",
+                flag: "🇹🇿"
+            },
+            Ush: {
+                name: "Ugandan Shilling",
+                symbol: "Ush",
+                country: "Uganda",
+                flag: "🇺🇬"
+            },
+            RWF: {
+                name: "Rwandan Franc",
+                symbol: "RWF",
+                country: "Rwanda",
+                flag: "🇷🇼"
+            },
+            BIF: {
+                name: "Burundian Franc",
+                symbol: "BIF",
+                country: "Burundi",
+                flag: "🇧🇮"
+            },
+            USD: {
+                name: "US Dollar",
+                symbol: "$",
+                country: "United States",
+                flag: "🇺🇸"
+            },
+            EUR: {
+                name: "Euro",
+                symbol: "€",
+                country: "European Union",
+                flag: "🇪🇺"
+            },
+            GBP: {
+                name: "British Pound",
+                symbol: "£",
+                country: "United Kingdom",
+                flag: "🇬🇧"
+            },
+            ZAR: {
+                name: "South African Rand",
+                symbol: "R",
+                country: "South Africa",
+                flag: "🇿🇦"
+            },
+            NGN: {
+                name: "Nigerian Naira",
+                symbol: "₦",
+                country: "Nigeria",
+                flag: "🇳🇬"
+            },
+            GHS: {
+                name: "Ghanaian Cedi",
+                symbol: "GH₵",
+                country: "Ghana",
+                flag: "🇬🇭"
+            }
+        };
+
+        /* -----------------------------------------------------
+           CREATE / REPAIR ALL CURRENCY OPTIONS
+        ----------------------------------------------------- */
+
+        const container =
+            menu.querySelector(".premium-currency-options");
+
+        if (!container) {
+            console.error("BizPilot: Currency options container not found.");
+            return;
+        }
+
+        container.innerHTML = "";
+
+        Object.keys(currencies).forEach(function (currency) {
+
+            const info = currencies[currency];
+
+            const button = document.createElement("button");
+
+            button.type = "button";
+            button.className = "premium-currency-option";
+
+            button.dataset.currency = currency;
+            button.dataset.name = info.name;
+            button.dataset.flag = info.flag;
+
+            button.innerHTML = `
+                <span class="currency-option-flag">
+                    ${info.flag}
+                </span>
+
+                <span class="currency-option-info">
+                    <strong>${info.name}</strong>
+                    <small>
+                        ${info.symbol} · ${info.country} · ${currency}
+                    </small>
+                </span>
+
+                <span class="currency-option-check">
+                    ✓
+                </span>
+            `;
+
+            container.appendChild(button);
+        });
+
+        /* -----------------------------------------------------
+           GET CURRENT CURRENCY
+        ----------------------------------------------------- */
+
+        function getCurrency() {
+
+            let value =
+                select.value ||
+                localStorage.getItem("bizpilot_currency") ||
+                "KES";
+
+            if (value === "Ksh" || value === "KSH") {
+                value = "KES";
+            }
+
+            if (!currencies[value]) {
+                value = "KES";
+            }
+
+            return value;
+        }
+
+        /* -----------------------------------------------------
+           UPDATE BUTTON DISPLAY
+        ----------------------------------------------------- */
+
+        function updateDisplay() {
+
+            const current = getCurrency();
+            const info = currencies[current];
+
+            select.value = current;
+
+            localStorage.setItem(
+                "bizpilot_currency",
+                current
+            );
+
+            if (flag) {
+                flag.textContent = info.flag;
+            }
+
+            if (name) {
+                name.textContent = info.country;
+            }
+
+            if (code) {
+                code.textContent =
+                    info.symbol +
+                    " · " +
+                    info.country +
+                    " · " +
+                    current;
+            }
+
+            menu
+                .querySelectorAll(".premium-currency-option")
+                .forEach(function (option) {
+
+                    option.classList.toggle(
+                        "selected",
+                        option.dataset.currency === current
+                    );
+
+                });
+        }
+
+        /* -----------------------------------------------------
+           OPEN MENU
+        ----------------------------------------------------- */
+
+        function openMenu() {
+
+            menu.classList.add("open");
+            picker.classList.add("open");
+
+            updateDisplay();
+        }
+
+        /* -----------------------------------------------------
+           CLOSE MENU
+        ----------------------------------------------------- */
+
+        function closeMenu() {
+
+            menu.classList.remove("open");
+            picker.classList.remove("open");
+        }
+
+        /* -----------------------------------------------------
+           BUTTON
+        ----------------------------------------------------- */
+
+        trigger.addEventListener("click", function (event) {
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            if (menu.classList.contains("open")) {
+                closeMenu();
+            } else {
+                openMenu();
+            }
+
+        });
+
+        /* -----------------------------------------------------
+           CURRENCY SELECTION
+        ----------------------------------------------------- */
+
+        menu.addEventListener("click", function (event) {
+
+            const option =
+                event.target.closest(
+                    ".premium-currency-option"
+                );
+
+            if (!option) {
+                return;
+            }
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            const selected =
+                option.dataset.currency;
+
+            if (!currencies[selected]) {
+                return;
+            }
+
+            select.value = selected;
+
+            localStorage.setItem(
+                "bizpilot_currency",
+                selected
+            );
+
+            try {
+
+                if (
+                    typeof appData !== "undefined"
+                ) {
+
+                    if (!appData.business) {
+                        appData.business = {};
+                    }
+
+                    appData.business.currency =
+                        selected;
+
+                    if (
+                        typeof saveData === "function"
+                    ) {
+                        saveData();
+                    }
+
+                }
+
+            } catch (error) {
+
+                console.warn(
+                    "BizPilot currency save warning:",
+                    error
+                );
+
+            }
+
+            select.dispatchEvent(
+                new Event(
+                    "change",
+                    {
+                        bubbles: true
+                    }
+                )
+            );
+
+            updateDisplay();
+            closeMenu();
+
+            setTimeout(function () {
+
+                if (
+                    typeof refreshApp === "function"
+                ) {
+                    refreshApp();
+                }
+
+                if (
+                    typeof replaceKshText === "function"
+                ) {
+                    replaceKshText();
+                }
+
+            }, 150);
+
+            if (
+                typeof showToast === "function"
+            ) {
+
+                showToast(
+                    "Currency changed to " +
+                    currencies[selected].symbol +
+                    " · " +
+                    currencies[selected].country
+                );
+
+            }
+
+        });
+
+        /* -----------------------------------------------------
+           NORMAL SELECT CHANGES
+        ----------------------------------------------------- */
+
+        select.addEventListener("change", function () {
+
+            let value = select.value;
+
+            if (!currencies[value]) {
+                value = "KES";
+                select.value = value;
+            }
+
+            localStorage.setItem(
+                "bizpilot_currency",
+                value
+            );
+
+            updateDisplay();
+
+        });
+
+        /* -----------------------------------------------------
+           CLICK OUTSIDE
+        ----------------------------------------------------- */
+
+        document.addEventListener("click", function (event) {
+
+            if (
+                !picker.contains(event.target) &&
+                !menu.contains(event.target)
+            ) {
+                closeMenu();
+            }
+
+        });
+
+        /* -----------------------------------------------------
+           INITIALIZE
+        ----------------------------------------------------- */
+
+        let saved =
+            localStorage.getItem("bizpilot_currency");
+
+        if (saved === "Ksh" || saved === "KSH") {
+            saved = "KES";
+        }
+
+        if (!currencies[saved]) {
+            saved = "KES";
+        }
+
+        select.value = saved;
+
+        localStorage.setItem(
+            "bizpilot_currency",
+            saved
+        );
+
+        updateDisplay();
+
+        console.log(
+            "BizPilot: Premium currency picker loaded with " +
+            Object.keys(currencies).length +
+            " currencies."
+        );
+
+    }
+
+    if (document.readyState === "loading") {
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            initBizPilotCurrencyPicker,
+            { once: true }
+        );
+
+    } else {
+
+        initBizPilotCurrencyPicker();
+
+    }
+
+})();
+/* =========================================================
+   BIZPILOT — RESTORE PREMIUM CURRENCY OPTIONS
+   ========================================================= */
+
+(function () {
+
+    function restoreCurrencyOptions() {
+
+        const menu = document.getElementById("premiumCurrencyMenu");
+
+        if (!menu) {
+            console.error("BizPilot: Currency menu not found.");
+            return;
+        }
+
+        let container =
+            menu.querySelector(".premium-currency-options");
+
+        /* Create the options container if it is missing */
+        if (!container) {
+
+            container = document.createElement("div");
+
+            container.className =
+                "premium-currency-options";
+
+            menu.appendChild(container);
+        }
+
+        /* Clear broken/missing options */
+        container.innerHTML = "";
+
+        const currencies = [
+            {
+                code: "KES",
+                name: "Kenyan Shilling",
+                symbol: "KSh",
+                country: "Kenya",
+                flag: "🇰🇪"
+            },
+            {
+                code: "TSh",
+                name: "Tanzanian Shilling",
+                symbol: "TSh",
+                country: "Tanzania",
+                flag: "🇹🇿"
+            },
+            {
+                code: "Ush",
+                name: "Ugandan Shilling",
+                symbol: "Ush",
+                country: "Uganda",
+                flag: "🇺🇬"
+            },
+            {
+                code: "RWF",
+                name: "Rwandan Franc",
+                symbol: "RWF",
+                country: "Rwanda",
+                flag: "🇷🇼"
+            },
+            {
+                code: "BIF",
+                name: "Burundian Franc",
+                symbol: "BIF",
+                country: "Burundi",
+                flag: "🇧🇮"
+            },
+            {
+                code: "USD",
+                name: "US Dollar",
+                symbol: "$",
+                country: "United States",
+                flag: "🇺🇸"
+            },
+            {
+                code: "EUR",
+                name: "Euro",
+                symbol: "€",
+                country: "European Union",
+                flag: "🇪🇺"
+            },
+            {
+                code: "GBP",
+                name: "British Pound",
+                symbol: "£",
+                country: "United Kingdom",
+                flag: "🇬🇧"
+            },
+            {
+                code: "ZAR",
+                name: "South African Rand",
+                symbol: "R",
+                country: "South Africa",
+                flag: "🇿🇦"
+            },
+            {
+                code: "NGN",
+                name: "Nigerian Naira",
+                symbol: "₦",
+                country: "Nigeria",
+                flag: "🇳🇬"
+            },
+            {
+                code: "GHS",
+                name: "Ghanaian Cedi",
+                symbol: "GH₵",
+                country: "Ghana",
+                flag: "🇬🇭"
+            }
+        ];
+
+        currencies.forEach(function (currency) {
+
+            const option =
+                document.createElement("button");
+
+            option.type = "button";
+
+            option.className =
+                "premium-currency-option";
+
+            option.dataset.currency =
+                currency.code;
+
+            option.dataset.name =
+                currency.name;
+
+            option.dataset.flag =
+                currency.flag;
+
+            option.innerHTML = `
+                <span class="currency-option-flag">
+                    ${currency.flag}
+                </span>
+
+                <span class="currency-option-info">
+
+                    <strong>
+                        ${currency.name}
+                    </strong>
+
+                    <small>
+                        ${currency.symbol}
+                        ·
+                        ${currency.country}
+                        ·
+                        ${currency.code}
+                    </small>
+
+                </span>
+
+                <span class="currency-option-check">
+                    ✓
+                </span>
+            `;
+
+            container.appendChild(option);
+
+        });
+
+        /* Make sure the hidden select also contains them */
+
+        const select =
+            document.getElementById("currency");
+
+        if (select) {
+
+            currencies.forEach(function (currency) {
+
+                if (
+                    !select.querySelector(
+                        'option[value="' +
+                        currency.code +
+                        '"]'
+                    )
+                ) {
+
+                    const option =
+                        document.createElement("option");
+
+                    option.value =
+                        currency.code;
+
+                    option.textContent =
+                        currency.code;
+
+                    select.appendChild(option);
+                }
+
+            });
+
+        }
+
+        console.log(
+            "BizPilot: Restored " +
+            currencies.length +
+            " currency options."
+        );
+
+    }
+
+    if (document.readyState === "loading") {
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+                setTimeout(
+                    restoreCurrencyOptions,
+                    800
+                );
+            },
+            { once: true }
+        );
+
+    } else {
+
+        setTimeout(
+            restoreCurrencyOptions,
+            800
+        );
+
+    }
+
+})();
+/* =========================================================
+   BIZPILOT — CURRENCY PICKER FINAL OVERRIDE
+   ONE CLEAN WORKING SYSTEM
+   ========================================================= */
+
+(function () {
+
+    const CURRENCIES = {
+        KES: {
+            name: "Kenyan Shilling",
+            symbol: "KSh",
+            country: "Kenya",
+            flag: "🇰🇪"
+        },
+        TSh: {
+            name: "Tanzanian Shilling",
+            symbol: "TSh",
+            country: "Tanzania",
+            flag: "🇹🇿"
+        },
+        Ush: {
+            name: "Ugandan Shilling",
+            symbol: "Ush",
+            country: "Uganda",
+            flag: "🇺🇬"
+        },
+        RWF: {
+            name: "Rwandan Franc",
+            symbol: "RWF",
+            country: "Rwanda",
+            flag: "🇷🇼"
+        },
+        BIF: {
+            name: "Burundian Franc",
+            symbol: "BIF",
+            country: "Burundi",
+            flag: "🇧🇮"
+        },
+        USD: {
+            name: "US Dollar",
+            symbol: "$",
+            country: "United States",
+            flag: "🇺🇸"
+        },
+        EUR: {
+            name: "Euro",
+            symbol: "€",
+            country: "European Union",
+            flag: "🇪🇺"
+        },
+        GBP: {
+            name: "British Pound",
+            symbol: "£",
+            country: "United Kingdom",
+            flag: "🇬🇧"
+        },
+        ZAR: {
+            name: "South African Rand",
+            symbol: "R",
+            country: "South Africa",
+            flag: "🇿🇦"
+        },
+        NGN: {
+            name: "Nigerian Naira",
+            symbol: "₦",
+            country: "Nigeria",
+            flag: "🇳🇬"
+        },
+        GHS: {
+            name: "Ghanaian Cedi",
+            symbol: "GH₵",
+            country: "Ghana",
+            flag: "🇬🇭"
+        }
+    };
+
+
+    function startCurrencyPicker() {
+
+        const picker =
+            document.getElementById("premiumCurrencyPicker");
+
+        const trigger =
+            document.getElementById("premiumCurrencyTrigger");
+
+        const menu =
+            document.getElementById("premiumCurrencyMenu");
+
+        const select =
+            document.getElementById("currency");
+
+        if (!picker || !trigger || !menu || !select) {
+            console.error(
+                "BizPilot: Currency picker HTML not found."
+            );
+            return;
+        }
+
+
+        /* -----------------------------------------
+           CREATE / RESTORE OPTIONS
+           ----------------------------------------- */
+
+        let optionsContainer =
+            menu.querySelector(".premium-currency-options");
+
+        if (!optionsContainer) {
+
+            optionsContainer =
+                document.createElement("div");
+
+            optionsContainer.className =
+                "premium-currency-options";
+
+            menu.appendChild(optionsContainer);
+        }
+
+
+        optionsContainer.innerHTML = "";
+
+
+        Object.keys(CURRENCIES).forEach(function (code) {
+
+            const currency = CURRENCIES[code];
+
+            const button =
+                document.createElement("button");
+
+            button.type = "button";
+
+            button.className =
+                "premium-currency-option";
+
+            button.dataset.currency = code;
+
+            button.dataset.name = currency.name;
+
+            button.dataset.flag = currency.flag;
+
+            button.innerHTML = `
+                <span class="currency-option-flag">
+                    ${currency.flag}
+                </span>
+
+                <span class="currency-option-info">
+                    <strong>${currency.name}</strong>
+                    <small>
+                        ${currency.symbol}
+                        ·
+                        ${currency.country}
+                        ·
+                        ${code}
+                    </small>
+                </span>
+
+                <span class="currency-option-check">
+                    ✓
+                </span>
+            `;
+
+            optionsContainer.appendChild(button);
+
+
+            /* Add option to hidden select */
+            if (
+                !select.querySelector(
+                    'option[value="' + code + '"]'
+                )
+            ) {
+
+                const selectOption =
+                    document.createElement("option");
+
+                selectOption.value = code;
+
+                selectOption.textContent = code;
+
+                select.appendChild(selectOption);
+            }
+
+        });
+
+
+        /* -----------------------------------------
+           CURRENT CURRENCY
+           ----------------------------------------- */
+
+        function getCurrentCurrency() {
+
+            let value =
+                localStorage.getItem(
+                    "bizpilot_currency"
+                );
+
+            if (!value && select.value) {
+                value = select.value;
+            }
+
+            if (
+                value === "Ksh" ||
+                value === "KSH"
+            ) {
+                value = "KES";
+            }
+
+            if (!CURRENCIES[value]) {
+                value = "KES";
+            }
+
+            return value;
+        }
+
+
+        /* -----------------------------------------
+           UPDATE DISPLAY
+           ----------------------------------------- */
+
+        function updateDisplay() {
+
+            const currency =
+                getCurrentCurrency();
+
+            const info =
+                CURRENCIES[currency];
+
+            select.value = currency;
+
+            localStorage.setItem(
+                "bizpilot_currency",
+                currency
+            );
+
+
+            const flag =
+                document.getElementById(
+                    "premiumCurrencyFlag"
+                );
+
+            const name =
+                document.getElementById(
+                    "premiumCurrencyName"
+                );
+
+            const code =
+                document.getElementById(
+                    "premiumCurrencyCode"
+                );
+
+
+            if (flag) {
+                flag.textContent =
+                    info.flag;
+            }
+
+            if (name) {
+                name.textContent =
+                    info.name;
+            }
+
+            if (code) {
+                code.textContent =
+                    info.symbol +
+                    " · " +
+                    info.country +
+                    " · " +
+                    currency;
+            }
+
+
+            optionsContainer
+                .querySelectorAll(
+                    ".premium-currency-option"
+                )
+                .forEach(function (option) {
+
+                    option.classList.toggle(
+                        "selected",
+                        option.dataset.currency === currency
+                    );
+
+                });
+
+
+            /* Sync appData */
+
+            try {
+
+                if (
+                    typeof appData !== "undefined" &&
+                    appData.business
+                ) {
+
+                    appData.business.currency =
+                        currency;
+
+                    localStorage.setItem(
+                        STORAGE_KEY,
+                        JSON.stringify(appData)
+                    );
+                }
+
+            } catch (error) {}
+
+        }
+
+
+        /* -----------------------------------------
+           OPEN / CLOSE
+           ----------------------------------------- */
+
+        trigger.onclick = function (event) {
+
+            event.preventDefault();
+
+            event.stopPropagation();
+
+            picker.classList.toggle("open");
+
+            updateDisplay();
+
+        };
+
+
+        /* -----------------------------------------
+           CURRENCY SELECTION
+           EVENT DELEGATION
+           ----------------------------------------- */
+
+        menu.onclick = function (event) {
+
+            const option =
+                event.target.closest(
+                    ".premium-currency-option"
+                );
+
+            if (!option) return;
+
+            event.preventDefault();
+
+            event.stopPropagation();
+
+
+            const selectedCurrency =
+                option.dataset.currency;
+
+            if (!CURRENCIES[selectedCurrency]) {
+                return;
+            }
+
+
+            /* Save */
+
+            localStorage.setItem(
+                "bizpilot_currency",
+                selectedCurrency
+            );
+
+            select.value =
+                selectedCurrency;
+
+
+            /* Update appData */
+
+            try {
+
+                if (
+                    typeof appData !== "undefined" &&
+                    appData.business
+                ) {
+
+                    appData.business.currency =
+                        selectedCurrency;
+
+                    localStorage.setItem(
+                        STORAGE_KEY,
+                        JSON.stringify(appData)
+                    );
+
+                }
+
+            } catch (error) {}
+
+
+            updateDisplay();
+
+
+            /* Close menu */
+
+            picker.classList.remove("open");
+
+
+            /* Refresh business UI */
+
+            try {
+
+                if (
+                    typeof renderDashboard ===
+                    "function"
+                ) {
+                    renderDashboard();
+                }
+
+            } catch (error) {}
+
+
+            try {
+
+                if (
+                    typeof renderSales ===
+                    "function"
+                ) {
+                    renderSales();
+                }
+
+            } catch (error) {}
+
+
+            try {
+
+                if (
+                    typeof renderExpenses ===
+                    "function"
+                ) {
+                    renderExpenses();
+                }
+
+            } catch (error) {}
+
+
+            try {
+
+                if (
+                    typeof renderInventory ===
+                    "function"
+                ) {
+                    renderInventory();
+                }
+
+            } catch (error) {}
+
+
+            try {
+
+                if (
+                    typeof renderCustomers ===
+                    "function"
+                ) {
+                    renderCustomers();
+                }
+
+            } catch (error) {}
+
+        };
+
+
+        /* -----------------------------------------
+           CLOSE WHEN CLICKING OUTSIDE
+           ----------------------------------------- */
+
+        document.addEventListener(
+            "click",
+            function (event) {
+
+                if (
+                    !picker.contains(event.target)
+                ) {
+
+                    picker.classList.remove(
+                        "open"
+                    );
+
+                }
+
+            }
+        );
+
+
+        /* -----------------------------------------
+           INITIAL DISPLAY
+           ----------------------------------------- */
+
+        updateDisplay();
+
+
+        console.log(
+            "BizPilot: Currency picker loaded successfully — 11 currencies."
+        );
+
+    }
+
+
+    if (
+        document.readyState === "loading"
+    ) {
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+                setTimeout(
+                    startCurrencyPicker,
+                    300
+                );
+            },
+            { once: true }
+        );
+
+    } else {
+
+        setTimeout(
+            startCurrencyPicker,
+            300
+        );
+
+    }
+
+})();
+/* =========================================================
+   BIZPILOT — PREMIUM DASHBOARD COMMAND CENTER
+   ========================================================= */
+
+(function () {
+
+    function addDashboardCommandCenter() {
+
+        const dashboard = document.getElementById("dashboard");
+
+        if (!dashboard) return;
+
+        if (dashboard.querySelector(".bizpilot-command-center")) {
+            updateDashboardCommandCenter();
+            return;
+        }
+
+        const card = document.createElement("div");
+
+        card.className = "bizpilot-command-center";
+
+        card.innerHTML = `
+            <div class="bizpilot-command-top">
+
+                <div>
+                    <span class="bizpilot-command-label">
+                        Business command center
+                    </span>
+
+                    <h3 class="bizpilot-command-title">
+                        Your business at a glance
+                    </h3>
+
+                    <p class="bizpilot-command-subtitle">
+                        Focus on the numbers that matter most today.
+                    </p>
+                </div>
+
+                <div class="bizpilot-command-score">
+                    <strong id="bizpilotCommandScore">--</strong>
+                    <span>Health</span>
+                </div>
+
+            </div>
+
+            <div class="bizpilot-command-actions">
+
+                <div class="bizpilot-command-action">
+                    <small>Sales</small>
+                    <strong id="bizpilotCommandSales">
+                        KSh 0
+                    </strong>
+                </div>
+
+                <div class="bizpilot-command-action">
+                    <small>Profit</small>
+                    <strong id="bizpilotCommandProfit">
+                        KSh 0
+                    </strong>
+                </div>
+
+                <div class="bizpilot-command-action">
+                    <small>Priority</small>
+                    <strong id="bizpilotCommandPriority">
+                        Review your business
+                    </strong>
+                </div>
+
+            </div>
+        `;
+
+        const firstContent =
+            dashboard.querySelector(
+                ".dashboard-grid, .dashboard-content, .stats-grid"
+            );
+
+        if (firstContent) {
+            firstContent.parentNode.insertBefore(
+                card,
+                firstContent
+            );
+        } else {
+            dashboard.prepend(card);
+        }
+
+        updateDashboardCommandCenter();
+    }
+
+
+    function updateDashboardCommandCenter() {
+
+        const score =
+            document.getElementById(
+                "bizpilotCommandScore"
+            );
+
+        const salesElement =
+            document.getElementById(
+                "bizpilotCommandSales"
+            );
+
+        const profitElement =
+            document.getElementById(
+                "bizpilotCommandProfit"
+            );
+
+        const priorityElement =
+            document.getElementById(
+                "bizpilotCommandPriority"
+            );
+
+        if (
+            !score ||
+            !salesElement ||
+            !profitElement ||
+            !priorityElement
+        ) {
+            return;
+        }
+
+
+        let sales = [];
+        let expenses = [];
+        let inventory = [];
+
+        try {
+
+            if (
+                typeof appData !== "undefined" &&
+                appData
+            ) {
+
+                sales = Array.isArray(appData.sales)
+                    ? appData.sales
+                    : [];
+
+                expenses = Array.isArray(appData.expenses)
+                    ? appData.expenses
+                    : [];
+
+                inventory = Array.isArray(appData.inventory)
+                    ? appData.inventory
+                    : [];
+
+            }
+
+        } catch (error) {}
+
+
+        const today =
+            new Date().toISOString().slice(0, 10);
+
+
+        const todaySales =
+            sales.reduce(function (total, sale) {
+
+                const date =
+                    sale.date ||
+                    sale.createdAt ||
+                    "";
+
+                if (
+                    String(date).slice(0, 10) !== today
+                ) {
+                    return total;
+                }
+
+                return total +
+                    Number(
+                        sale.amount ??
+                        sale.total ??
+                        sale.price ??
+                        0
+                    );
+
+            }, 0);
+
+
+        const todayExpenses =
+            expenses.reduce(function (total, expense) {
+
+                const date =
+                    expense.date ||
+                    expense.createdAt ||
+                    "";
+
+                if (
+                    String(date).slice(0, 10) !== today
+                ) {
+                    return total;
+                }
+
+                return total +
+                    Number(
+                        expense.amount ??
+                        expense.total ??
+                        0
+                    );
+
+            }, 0);
+
+
+        const profit =
+            todaySales - todayExpenses;
+
+
+        let lowStock = 0;
+        let outOfStock = 0;
+
+
+        inventory.forEach(function (item) {
+
+            const quantity =
+                Number(
+                    item.quantity ??
+                    item.stock ??
+                    item.qty ??
+                    0
+                );
+
+            const minimum =
+                Number(
+                    item.minimumStock ??
+                    item.minStock ??
+                    item.reorderLevel ??
+                    5
+                );
+
+            if (quantity <= 0) {
+                outOfStock++;
+            } else if (quantity <= minimum) {
+                lowStock++;
+            }
+
+        });
+
+
+        /*
+         * Calculate a simple local business signal.
+         * This is not presented as a financial/AI guarantee.
+         */
+
+        let health = 70;
+
+        if (todaySales > 0) health += 10;
+
+        if (profit > 0) health += 10;
+
+        if (outOfStock > 0) health -= 15;
+        else if (lowStock > 0) health -= 5;
+
+        health =
+            Math.max(
+                0,
+                Math.min(100, health)
+            );
+
+
+        let priority =
+            "Keep tracking today's numbers";
+
+
+        if (outOfStock > 0) {
+
+            priority =
+                "Restock out-of-stock items";
+
+        } else if (lowStock > 0) {
+
+            priority =
+                "Review low-stock products";
+
+        } else if (todaySales === 0) {
+
+            priority =
+                "Record today's first sale";
+
+        } else if (profit <= 0) {
+
+            priority =
+                "Review today's expenses";
+
+        } else {
+
+            priority =
+                "Keep your momentum going";
+
+        }
+
+
+        function money(value) {
+
+            let symbol = "KSh";
+
+            try {
+
+                if (
+                    typeof appData !== "undefined" &&
+                    appData.business &&
+                    appData.business.currency
+                ) {
+
+                    const currency =
+                        appData.business.currency;
+
+                    const symbols = {
+                        KES: "KSh",
+                        TSh: "TSh",
+                        Ush: "Ush",
+                        RWF: "RWF",
+                        BIF: "BIF",
+                        USD: "$",
+                        EUR: "€",
+                        GBP: "£",
+                        ZAR: "R",
+                        NGN: "₦",
+                        GHS: "GH₵"
+                    };
+
+                    symbol =
+                        symbols[currency] ||
+                        currency;
+
+                }
+
+            } catch (error) {}
+
+            return symbol + " " +
+                Number(value || 0).toLocaleString(
+                    "en-KE",
+                    {
+                        maximumFractionDigits: 0
+                    }
+                );
+        }
+
+
+        score.textContent = health;
+
+        salesElement.textContent =
+            money(todaySales);
+
+        profitElement.textContent =
+            money(profit);
+
+        priorityElement.textContent =
+            priority;
+    }
+
+
+    function start() {
+
+        setTimeout(
+            addDashboardCommandCenter,
+            700
+        );
+
+    }
+
+
+    if (
+        document.readyState === "loading"
+    ) {
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            start,
+            { once: true }
+        );
+
+    } else {
+
+        start();
+
+    }
+
+
+    window.addEventListener(
+        "load",
         function () {
 
             setTimeout(
-                updateLiveDashboardHeader,
+                updateDashboardCommandCenter,
+                800
+            );
+
+        }
+    );
+
+
+    window.addEventListener(
+        "resize",
+        function () {
+
+            setTimeout(
+                updateDashboardCommandCenter,
                 100
             );
 
@@ -21108,18 +23787,789 @@ if ("serviceWorker" in navigator) {
     );
 
 
-    /* Run after authentication finishes */
+    window.bizpilotUpdateCommandCenter =
+        updateDashboardCommandCenter;
+
+})();
+/* =========================================================
+   BIZPILOT — PREMIUM TODAY'S FOCUS
+   ========================================================= */
+
+(function () {
+
+    function addTodaysFocus() {
+
+        const dashboard = document.getElementById("dashboard");
+        if (!dashboard) return;
+
+        let existing = dashboard.querySelector(".bizpilot-today-focus");
+
+        if (!existing) {
+
+            existing = document.createElement("div");
+            existing.className = "bizpilot-today-focus";
+
+            existing.innerHTML = `
+                <div class="bizpilot-today-focus-head">
+                    <div class="bizpilot-today-focus-title-wrap">
+                        <span class="bizpilot-today-focus-label">
+                            Smart guidance
+                        </span>
+
+                        <h3 class="bizpilot-today-focus-title">
+                            Today's Focus
+                        </h3>
+                    </div>
+
+                    <span class="bizpilot-today-focus-badge">
+                        BizPilot AI
+                    </span>
+                </div>
+
+                <div class="bizpilot-today-focus-list">
+
+                    <div class="bizpilot-focus-item">
+                        <small>Sales</small>
+                        <strong id="bizpilotFocusSales">
+                            No sales recorded yet
+                        </strong>
+                        <p id="bizpilotFocusSalesText">
+                            Record today's sales to track your progress.
+                        </p>
+                    </div>
+
+                    <div class="bizpilot-focus-item">
+                        <small>Expenses</small>
+                        <strong id="bizpilotFocusExpenses">
+                            No expenses recorded
+                        </strong>
+                        <p id="bizpilotFocusExpensesText">
+                            Keep an eye on today's spending.
+                        </p>
+                    </div>
+
+                    <div class="bizpilot-focus-item priority">
+                        <small>Priority</small>
+                        <strong id="bizpilotFocusPriority">
+                            Review your business
+                        </strong>
+                        <p id="bizpilotFocusPriorityText">
+                            BizPilot will highlight what needs attention.
+                        </p>
+                    </div>
+
+                </div>
+            `;
+
+            const commandCenter =
+                dashboard.querySelector(".bizpilot-command-center");
+
+            if (commandCenter) {
+                commandCenter.insertAdjacentElement(
+                    "afterend",
+                    existing
+                );
+            } else {
+                dashboard.prepend(existing);
+            }
+        }
+
+        updateTodaysFocus();
+    }
+
+
+    function updateTodaysFocus() {
+
+        const salesEl =
+            document.getElementById("bizpilotFocusSales");
+
+        const salesTextEl =
+            document.getElementById("bizpilotFocusSalesText");
+
+        const expensesEl =
+            document.getElementById("bizpilotFocusExpenses");
+
+        const expensesTextEl =
+            document.getElementById("bizpilotFocusExpensesText");
+
+        const priorityEl =
+            document.getElementById("bizpilotFocusPriority");
+
+        const priorityTextEl =
+            document.getElementById("bizpilotFocusPriorityText");
+
+        if (
+            !salesEl ||
+            !salesTextEl ||
+            !expensesEl ||
+            !expensesTextEl ||
+            !priorityEl ||
+            !priorityTextEl
+        ) return;
+
+
+        let sales = [];
+        let expenses = [];
+        let inventory = [];
+
+        try {
+
+            if (typeof appData !== "undefined" && appData) {
+
+                sales =
+                    Array.isArray(appData.sales)
+                        ? appData.sales
+                        : [];
+
+                expenses =
+                    Array.isArray(appData.expenses)
+                        ? appData.expenses
+                        : [];
+
+                inventory =
+                    Array.isArray(appData.inventory)
+                        ? appData.inventory
+                        : [];
+            }
+
+        } catch (error) {}
+
+
+        const today =
+            new Date().toISOString().slice(0, 10);
+
+
+        const todaySales =
+            sales.reduce(function (total, sale) {
+
+                const date =
+                    sale.date ||
+                    sale.createdAt ||
+                    "";
+
+                if (
+                    String(date).slice(0, 10) !== today
+                ) {
+                    return total;
+                }
+
+                return total +
+                    Number(
+                        sale.amount ??
+                        sale.total ??
+                        sale.price ??
+                        0
+                    );
+
+            }, 0);
+
+
+        const todayExpenses =
+            expenses.reduce(function (total, expense) {
+
+                const date =
+                    expense.date ||
+                    expense.createdAt ||
+                    "";
+
+                if (
+                    String(date).slice(0, 10) !== today
+                ) {
+                    return total;
+                }
+
+                return total +
+                    Number(
+                        expense.amount ??
+                        expense.total ??
+                        0
+                    );
+
+            }, 0);
+
+
+        let lowStock = 0;
+        let outOfStock = 0;
+
+        inventory.forEach(function (item) {
+
+            const quantity =
+                Number(
+                    item.quantity ??
+                    item.stock ??
+                    item.qty ??
+                    0
+                );
+
+            const minimum =
+                Number(
+                    item.minimumStock ??
+                    item.minStock ??
+                    item.reorderLevel ??
+                    5
+                );
+
+            if (quantity <= 0) {
+                outOfStock++;
+            } else if (quantity <= minimum) {
+                lowStock++;
+            }
+
+        });
+
+
+        function money(value) {
+
+            let symbol = "KSh";
+
+            try {
+
+                if (
+                    typeof appData !== "undefined" &&
+                    appData.business &&
+                    appData.business.currency
+                ) {
+
+                    const currency =
+                        appData.business.currency;
+
+                    const symbols = {
+                        KES: "KSh",
+                        TSh: "TSh",
+                        Ush: "Ush",
+                        RWF: "RWF",
+                        BIF: "BIF",
+                        USD: "$",
+                        EUR: "€",
+                        GBP: "£",
+                        ZAR: "R",
+                        NGN: "₦",
+                        GHS: "GH₵"
+                    };
+
+                    symbol =
+                        symbols[currency] ||
+                        currency;
+                }
+
+            } catch (error) {}
+
+            return (
+                symbol +
+                " " +
+                Number(value || 0)
+                    .toLocaleString("en-KE", {
+                        maximumFractionDigits: 0
+                    })
+            );
+        }
+
+
+        /* SALES */
+
+        if (todaySales > 0) {
+
+            salesEl.textContent =
+                money(todaySales);
+
+            salesTextEl.textContent =
+                "You've recorded sales today. Keep the momentum going.";
+
+        } else {
+
+            salesEl.textContent =
+                "No sales recorded yet";
+
+            salesTextEl.textContent =
+                "Record today's sales to track your progress.";
+        }
+
+
+        /* EXPENSES */
+
+        if (todayExpenses > 0) {
+
+            expensesEl.textContent =
+                money(todayExpenses);
+
+            expensesTextEl.textContent =
+                "Today's spending is being tracked automatically.";
+
+        } else {
+
+            expensesEl.textContent =
+                "No expenses recorded";
+
+            expensesTextEl.textContent =
+                "Keep an eye on today's spending.";
+        }
+
+
+        /* PRIORITY */
+
+        if (outOfStock > 0) {
+
+            priorityEl.textContent =
+                "Restock products";
+
+            priorityTextEl.textContent =
+                outOfStock +
+                " item" +
+                (outOfStock === 1 ? "" : "s") +
+                " out of stock.";
+
+        } else if (lowStock > 0) {
+
+            priorityEl.textContent =
+                "Review low stock";
+
+            priorityTextEl.textContent =
+                lowStock +
+                " product" +
+                (lowStock === 1 ? "" : "s") +
+                " need attention.";
+
+        } else if (todaySales === 0) {
+
+            priorityEl.textContent =
+                "Record your first sale";
+
+            priorityTextEl.textContent =
+                "Start today's tracking with your first transaction.";
+
+        } else if (todayExpenses > todaySales) {
+
+            priorityEl.textContent =
+                "Review expenses";
+
+            priorityTextEl.textContent =
+                "Today's expenses are higher than today's sales.";
+
+        } else {
+
+            priorityEl.textContent =
+                "Keep your momentum";
+
+            priorityTextEl.textContent =
+                "Your numbers are moving in a healthy direction.";
+        }
+    }
+
+
+    function startTodaysFocus() {
+
+        setTimeout(function () {
+            addTodaysFocus();
+        }, 900);
+
+    }
+
+
+    if (document.readyState === "loading") {
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            startTodaysFocus,
+            { once: true }
+        );
+
+    } else {
+
+        startTodaysFocus();
+
+    }
+
+
+    window.addEventListener("load", function () {
+
+        setTimeout(
+            updateTodaysFocus,
+            1000
+        );
+
+    });
+
+
+    document.addEventListener("click", function () {
+
+        setTimeout(
+            updateTodaysFocus,
+            250
+        );
+
+    });
+
+
+    window.bizpilotUpdateTodaysFocus =
+        updateTodaysFocus;
+
+})();
+/* =========================================================
+   BIZPILOT V3.0 — FINAL LAUNCH SAFETY LAYER
+   ========================================================= */
+
+(function () {
+
+    function safeUpdateDashboard() {
+
+        try {
+
+            if (
+                typeof window.bizpilotUpdateCommandCenter === "function"
+            ) {
+                window.bizpilotUpdateCommandCenter();
+            }
+
+        } catch (error) {
+            console.warn(
+                "BizPilot: Command Center refresh skipped.",
+                error
+            );
+        }
+
+
+        try {
+
+            if (
+                typeof window.bizpilotUpdateTodaysFocus === "function"
+            ) {
+                window.bizpilotUpdateTodaysFocus();
+            }
+
+        } catch (error) {
+            console.warn(
+                "BizPilot: Today's Focus refresh skipped.",
+                error
+            );
+        }
+
+    }
+
+
+    function ensureFinalDashboard() {
+
+        try {
+
+            if (
+                typeof window.bizpilotUpdateCommandCenter ===
+                "function"
+            ) {
+                window.bizpilotUpdateCommandCenter();
+            }
+
+            if (
+                typeof window.bizpilotUpdateTodaysFocus ===
+                "function"
+            ) {
+                window.bizpilotUpdateTodaysFocus();
+            }
+
+        } catch (error) {}
+
+    }
+
+
+    /* Initial refresh */
+
+    if (document.readyState === "loading") {
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+
+                setTimeout(
+                    ensureFinalDashboard,
+                    1200
+                );
+
+            },
+            { once: true }
+        );
+
+    } else {
+
+        setTimeout(
+            ensureFinalDashboard,
+            1200
+        );
+
+    }
+
+
+    /* After full page load */
+
     window.addEventListener(
         "load",
         function () {
 
             setTimeout(
-                updateLiveDashboardHeader,
+                safeUpdateDashboard,
                 1000
             );
 
         }
     );
 
+
+    /* Refresh after navigation */
+
+    document.addEventListener(
+        "click",
+        function () {
+
+            setTimeout(
+                safeUpdateDashboard,
+                350
+            );
+
+        }
+    );
+
+
+    /* Keep dashboard figures current */
+
+    setInterval(
+        function () {
+
+            const dashboard =
+                document.getElementById("dashboard");
+
+            if (
+                dashboard &&
+                dashboard.classList.contains("active")
+            ) {
+                safeUpdateDashboard();
+            }
+
+        },
+        30000
+    );
+
+
+    /* Prevent accidental horizontal overflow */
+
+    function protectViewport() {
+
+        document.documentElement.style.overflowX =
+            "hidden";
+
+        document.body.style.overflowX =
+            "hidden";
+
+    }
+
+    protectViewport();
+
+    window.addEventListener(
+        "resize",
+        protectViewport
+    );
+
+
+})();
+/* =========================================================
+   BIZPILOT — ONE-TAP CURRENCY PICKER
+   ========================================================= */
+
+(function () {
+
+    function setupOneTapCurrencyPicker() {
+
+        const trigger =
+            document.getElementById("premiumCurrencyTrigger");
+
+        const menu =
+            document.getElementById("premiumCurrencyMenu");
+
+        const picker =
+            document.getElementById("premiumCurrencyPicker");
+
+        if (!trigger || !menu || !picker) return;
+
+        /* Prevent duplicate setup */
+        if (trigger.dataset.oneTapReady === "true") return;
+
+        trigger.dataset.oneTapReady = "true";
+
+        /*
+         * ONE TAP = OPEN
+         */
+        trigger.addEventListener("click", function (event) {
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            const isOpen =
+                menu.classList.contains("open") ||
+                menu.classList.contains("active") ||
+                menu.style.display === "block";
+
+            if (!isOpen) {
+
+                menu.classList.add("open");
+                menu.classList.add("active");
+
+                menu.style.display = "block";
+                menu.style.visibility = "visible";
+                menu.style.opacity = "1";
+                menu.style.pointerEvents = "auto";
+
+            }
+
+        }, true);
+
+
+        /*
+         * ONE TAP ON A CURRENCY = SELECT + CLOSE
+         */
+        menu.addEventListener("click", function (event) {
+
+            const option =
+                event.target.closest(
+                    ".premium-currency-option"
+                );
+
+            if (!option) return;
+
+            const currency =
+                option.dataset.currency;
+
+            if (!currency) return;
+
+            /*
+             * Update hidden select
+             */
+            const select =
+                document.getElementById("currency");
+
+            if (select) {
+
+                select.value = currency;
+
+                select.dispatchEvent(
+                    new Event("change", {
+                        bubbles: true
+                    })
+                );
+
+            }
+
+
+            /*
+             * Save selection
+             */
+            try {
+
+                localStorage.setItem(
+                    "bizpilot_currency",
+                    currency
+                );
+
+            } catch (error) {}
+
+
+            /*
+             * Close immediately
+             */
+            setTimeout(function () {
+
+                menu.classList.remove("open");
+                menu.classList.remove("active");
+
+                menu.style.display = "";
+                menu.style.visibility = "";
+                menu.style.opacity = "";
+                menu.style.pointerEvents = "";
+
+            }, 80);
+
+        });
+
+
+        /*
+         * CLICK OUTSIDE = CLOSE
+         */
+        document.addEventListener(
+            "click",
+            function (event) {
+
+                if (
+                    !picker.contains(event.target)
+                ) {
+
+                    menu.classList.remove("open");
+                    menu.classList.remove("active");
+
+                    menu.style.display = "";
+                    menu.style.visibility = "";
+                    menu.style.opacity = "";
+                    menu.style.pointerEvents = "";
+
+                }
+
+            },
+            true
+        );
+
+
+        /*
+         * ESCAPE = CLOSE
+         */
+        document.addEventListener(
+            "keydown",
+            function (event) {
+
+                if (event.key !== "Escape") return;
+
+                menu.classList.remove("open");
+                menu.classList.remove("active");
+
+                menu.style.display = "";
+                menu.style.visibility = "";
+                menu.style.opacity = "";
+                menu.style.pointerEvents = "";
+
+            }
+        );
+
+    }
+
+
+    function startOneTapCurrency() {
+
+        setTimeout(
+            setupOneTapCurrencyPicker,
+            1000
+        );
+
+    }
+
+
+    if (document.readyState === "loading") {
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            startOneTapCurrency,
+            { once: true }
+        );
+
+    } else {
+
+        startOneTapCurrency();
+
+    }
+
+
+    window.addEventListener(
+        "load",
+        function () {
+
+            setTimeout(
+                setupOneTapCurrencyPicker,
+                800
+            );
+
+        }
+    );
 
 })();

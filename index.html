@@ -1,40 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
 <link rel="manifest" href="manifest.json">
+
 <meta name="theme-color" content="#0396FF">
+
 <meta name="mobile-web-app-capable" content="yes">
+
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="BizPilot">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>BizPilot — Your Business Growth Assistant</title>
+<meta
+    name="apple-mobile-web-app-status-bar-style"
+    content="default"
+>
 
-    <meta
-        name="description"
-        content="BizPilot helps Kenyan small businesses understand sales, customers, inventory and business growth."
-    >
+<meta
+    name="apple-mobile-web-app-title"
+    content="BizPilot"
+>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<meta charset="UTF-8">
 
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet"
-    >
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
-    <link rel="stylesheet" href="style.css">
+<title>
+    BizPilot — Your Business Growth Assistant
+</title>
+
+<meta
+    name="description"
+    content="BizPilot helps Kenyan small businesses understand sales, customers, inventory and business growth."
+>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin
+>
+
+<link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+>
+
+<link
+    rel="stylesheet"
+    href="style.css"
+>
+
 </head>
 
+
 <body>
+
 
     <!-- ============================= -->
     <!-- SIDEBAR -->
     <!-- ============================= -->
 
-    <aside class="sidebar" id="sidebar">
+    <aside
+        class="sidebar"
+        id="sidebar"
+    >
 
         <div class="brand">
 
@@ -392,7 +425,7 @@
                         </div>
 
                         <strong id="todaySales">
-                            Ksh 0
+                            KSh 0
                         </strong>
 
                         <div class="stat-change positive">
@@ -417,7 +450,7 @@
                         </div>
 
                         <strong id="todayExpenses">
-                            Ksh 0
+                            KSh 0
                         </strong>
 
                         <div class="stat-change neutral">
@@ -442,7 +475,7 @@
                         </div>
 
                         <strong id="todayProfit">
-                            Ksh 0
+                            KSh 0
                         </strong>
 
                         <div class="stat-change positive">
@@ -711,8 +744,11 @@
                             <div class="chart">
 
                                 <div class="grid-line line-1"></div>
+
                                 <div class="grid-line line-2"></div>
+
                                 <div class="grid-line line-3"></div>
+
                                 <div class="grid-line line-4"></div>
 
 
@@ -1508,8 +1544,6 @@
                     </div>
 
 
-                    <!-- CONNECTED TO THE REAL INVOICE SYSTEM -->
-
                     <button
                         class="primary-btn"
                         id="bizpilotAddInvoiceBtn"
@@ -1569,7 +1603,7 @@
                         </span>
 
                         <strong id="reportRevenue">
-                            Ksh 0
+                            KSh 0
                         </strong>
 
                     </div>
@@ -1582,7 +1616,7 @@
                         </span>
 
                         <strong id="reportExpenses">
-                            Ksh 0
+                            KSh 0
                         </strong>
 
                     </div>
@@ -1595,7 +1629,7 @@
                         </span>
 
                         <strong id="reportProfit">
-                            Ksh 0
+                            KSh 0
                         </strong>
 
                     </div>
@@ -1664,30 +1698,522 @@
                     </div>
 
 
-                    <div class="settings-row">
+<!-- =============================
+     CURRENCY
+     ============================= -->
 
-                        <div>
+<div class="settings-row">
 
-                            <strong>
-                                Currency
-                            </strong>
+    <div>
 
-                            <p>
-                                Your default business currency.
-                            </p>
+        <strong>
+            Currency
+        </strong>
 
-                        </div>
+        <p>
+            Your default business currency.
+        </p>
+
+    </div>
 
 
-                        <select id="currency">
+    <!-- PREMIUM CURRENCY PICKER -->
 
-                            <option value="Ksh">
-                                Ksh — Kenyan Shilling
-                            </option>
+    <div
+        class="premium-currency-picker"
+        id="premiumCurrencyPicker"
+    >
 
-                        </select>
+        <!-- CURRENT CURRENCY -->
 
-                    </div>
+        <button
+            type="button"
+            class="premium-currency-trigger"
+            id="premiumCurrencyTrigger"
+        >
+
+            <span class="premium-currency-left">
+
+                <span
+                    class="premium-currency-flag"
+                    id="premiumCurrencyFlag"
+                >
+                    🇰🇪
+                </span>
+
+                <span class="premium-currency-info">
+
+                    <strong id="premiumCurrencyName">
+                        Kenya
+                    </strong>
+
+                    <small id="premiumCurrencyCode">
+                        KSh · Kenya · KES
+                    </small>
+
+                </span>
+
+            </span>
+
+
+            <span class="premium-currency-arrow">
+                ↓
+            </span>
+
+        </button>
+
+
+        <!-- CURRENCY MENU -->
+
+        <div
+            class="premium-currency-menu"
+            id="premiumCurrencyMenu"
+        >
+
+            <div class="premium-currency-menu-header">
+
+                <div>
+
+                    <strong>
+                        Select currency
+                    </strong>
+
+                    <small>
+                        Choose your business currency
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <div class="premium-currency-options">
+
+
+                <!-- KENYA -->
+
+                <button
+                    type="button"
+                    class="premium-currency-option selected"
+                    data-currency="KES"
+                    data-name="Kenya"
+                    data-flag="🇰🇪"
+                >
+
+                    <span class="currency-option-flag">
+                        🇰🇪
+                    </span>
+
+                    <span class="currency-option-info">
+
+                        <strong>
+                            Kenya
+                        </strong>
+
+                        <small>
+                            Kenyan Shilling · KSh · KES
+                        </small>
+
+                    </span>
+
+                    <span class="currency-option-check">
+                        ✓
+                    </span>
+
+                </button>
+
+
+                <!-- TANZANIA -->
+
+                <button
+                    type="button"
+                    class="premium-currency-option"
+                    data-currency="TSh"
+                    data-name="Tanzania"
+                    data-flag="🇹🇿"
+                >
+
+                    <span class="currency-option-flag">
+                        🇹🇿
+                    </span>
+
+                    <span class="currency-option-info">
+
+                        <strong>
+                            Tanzania
+                        </strong>
+
+                        <small>
+                            Tanzanian Shilling · TSh
+                        </small>
+
+                    </span>
+
+                    <span class="currency-option-check">
+                        ✓
+                    </span>
+
+                </button>
+
+
+                <!-- UGANDA -->
+
+                <button
+                    type="button"
+                    class="premium-currency-option"
+                    data-currency="Ush"
+                    data-name="Uganda"
+                    data-flag="🇺🇬"
+                >
+
+                    <span class="currency-option-flag">
+                        🇺🇬
+                    </span>
+
+                    <span class="currency-option-info">
+
+                        <strong>
+                            Uganda
+                        </strong>
+
+                        <small>
+                            Ugandan Shilling · USh
+                        </small>
+
+                    </span>
+
+                    <span class="currency-option-check">
+                        ✓
+                    </span>
+
+                </button>
+
+
+                <!-- RWANDA -->
+
+                <button
+                    type="button"
+                    class="premium-currency-option"
+                    data-currency="RWF"
+                    data-name="Rwanda"
+                    data-flag="🇷🇼"
+                >
+
+                    <span class="currency-option-flag">
+                        🇷🇼
+                    </span>
+
+                    <span class="currency-option-info">
+
+                        <strong>
+                            Rwanda
+                        </strong>
+
+                        <small>
+                            Rwandan Franc · RWF
+                        </small>
+
+                    </span>
+
+                    <span class="currency-option-check">
+                        ✓
+                    </span>
+
+                </button>
+
+
+                <!-- BURUNDI -->
+
+                <button
+                    type="button"
+                    class="premium-currency-option"
+                    data-currency="BIF"
+                    data-name="Burundi"
+                    data-flag="🇧🇮"
+                >
+
+                    <span class="currency-option-flag">
+                        🇧🇮
+                    </span>
+
+                    <span class="currency-option-info">
+
+                        <strong>
+                            Burundi
+                        </strong>
+
+                        <small>
+                            Burundian Franc · BIF
+                        </small>
+
+                    </span>
+
+                    <span class="currency-option-check">
+                        ✓
+                    </span>
+
+                </button>
+
+
+                <!-- UNITED STATES -->
+
+                <button
+                    type="button"
+                    class="premium-currency-option"
+                    data-currency="USD"
+                    data-name="United States"
+                    data-flag="🇺🇸"
+                >
+
+                    <span class="currency-option-flag">
+                        🇺🇸
+                    </span>
+
+                    <span class="currency-option-info">
+
+                        <strong>
+                            United States
+                        </strong>
+
+                        <small>
+                            US Dollar · USD
+                        </small>
+
+                    </span>
+
+                    <span class="currency-option-check">
+                        ✓
+                    </span>
+
+                </button>
+
+
+                <!-- EUROPE -->
+
+                <button
+                    type="button"
+                    class="premium-currency-option"
+                    data-currency="EUR"
+                    data-name="European Union"
+                    data-flag="🇪🇺"
+                >
+
+                    <span class="currency-option-flag">
+                        🇪🇺
+                    </span>
+
+                    <span class="currency-option-info">
+
+                        <strong>
+                            European Union
+                        </strong>
+
+                        <small>
+                            Euro · EUR
+                        </small>
+
+                    </span>
+
+                    <span class="currency-option-check">
+                        ✓
+                    </span>
+
+                </button>
+
+
+                <!-- UNITED KINGDOM -->
+
+                <button
+                    type="button"
+                    class="premium-currency-option"
+                    data-currency="GBP"
+                    data-name="United Kingdom"
+                    data-flag="🇬🇧"
+                >
+
+                    <span class="currency-option-flag">
+                        🇬🇧
+                    </span>
+
+                    <span class="currency-option-info">
+
+                        <strong>
+                            United Kingdom
+                        </strong>
+
+                        <small>
+                            British Pound · GBP
+                        </small>
+
+                    </span>
+
+                    <span class="currency-option-check">
+                        ✓
+                    </span>
+
+                </button>
+
+
+                <!-- SOUTH AFRICA -->
+
+                <button
+                    type="button"
+                    class="premium-currency-option"
+                    data-currency="ZAR"
+                    data-name="South Africa"
+                    data-flag="🇿🇦"
+                >
+
+                    <span class="currency-option-flag">
+                        🇿🇦
+                    </span>
+
+                    <span class="currency-option-info">
+
+                        <strong>
+                            South Africa
+                        </strong>
+
+                        <small>
+                            South African Rand · ZAR
+                        </small>
+
+                    </span>
+
+                    <span class="currency-option-check">
+                        ✓
+                    </span>
+
+                </button>
+
+
+                <!-- NIGERIA -->
+
+                <button
+                    type="button"
+                    class="premium-currency-option"
+                    data-currency="NGN"
+                    data-name="Nigeria"
+                    data-flag="🇳🇬"
+                >
+
+                    <span class="currency-option-flag">
+                        🇳🇬
+                    </span>
+
+                    <span class="currency-option-info">
+
+                        <strong>
+                            Nigeria
+                        </strong>
+
+                        <small>
+                            Nigerian Naira · NGN
+                        </small>
+
+                    </span>
+
+                    <span class="currency-option-check">
+                        ✓
+                    </span>
+
+                </button>
+
+
+                <!-- GHANA -->
+
+                <button
+                    type="button"
+                    class="premium-currency-option"
+                    data-currency="GHS"
+                    data-name="Ghana"
+                    data-flag="🇬🇭"
+                >
+
+                    <span class="currency-option-flag">
+                        🇬🇭
+                    </span>
+
+                    <span class="currency-option-info">
+
+                        <strong>
+                            Ghana
+                        </strong>
+
+                        <small>
+                            Ghanaian Cedi · GHS
+                        </small>
+
+                    </span>
+
+                    <span class="currency-option-check">
+                        ✓
+                    </span>
+
+                </button>
+
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- HIDDEN CURRENCY SELECT -->
+
+    <select
+        id="currency"
+        style="display:none !important;"
+    >
+
+        <option value="KES">
+            KES
+        </option>
+
+        <option value="TSh">
+            TSh
+        </option>
+
+        <option value="Ush">
+            Ush
+        </option>
+
+        <option value="RWF">
+            RWF
+        </option>
+
+        <option value="BIF">
+            BIF
+        </option>
+
+        <option value="USD">
+            USD
+        </option>
+
+        <option value="EUR">
+            EUR
+        </option>
+
+        <option value="GBP">
+            GBP
+        </option>
+
+        <option value="ZAR">
+            ZAR
+        </option>
+
+        <option value="NGN">
+            NGN
+        </option>
+
+        <option value="GHS">
+            GHS
+        </option>
+
+    </select>
+
+</div>
 
 
                     <div class="settings-row">
@@ -1874,7 +2400,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <!-- BIZPILOT APP -->
-    <script src="app.js"></script>
+
+    <script src="app.js" defer></script>
 
 </body>
 </html>
