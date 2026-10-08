@@ -12387,3 +12387,126 @@ button {
     }
 
 }
+/* =========================================================
+   BIZPILOT — FINAL CSS STABILITY PATCH
+   Add at the VERY BOTTOM of style.css
+   ========================================================= */
+
+/* Keep the app inside the screen */
+html,
+body {
+    max-width: 100%;
+    overflow-x: hidden !important;
+}
+
+/* Keep pages from jumping horizontally */
+.page {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* Keep dashboard/content areas responsive */
+.main-content,
+.content,
+.dashboard,
+.page-content {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* Tables can scroll instead of breaking the page */
+.table-container,
+.table-wrapper {
+    max-width: 100%;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Keep cards from becoming wider than the screen */
+.card,
+.dashboard-card,
+.stat-card,
+.panel {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* Prevent long text from stretching the layout */
+.card *,
+.dashboard-card *,
+.stat-card *,
+.panel * {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* Keep images responsive */
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Currency menu stays premium and centered */
+#premiumCurrencyMenu {
+    box-sizing: border-box !important;
+    max-width: calc(100vw - 24px) !important;
+}
+
+/* Currency options remain scrollable */
+#premiumCurrencyMenu .premium-currency-options {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+}
+
+/* Smooth but lightweight interactions */
+button,
+input,
+select,
+textarea {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Mobile protection */
+@media (max-width: 600px) {
+
+    .main-content,
+    .content,
+    .page,
+    .page-content {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .card,
+    .dashboard-card,
+    .stat-card,
+    .panel {
+        max-width: 100% !important;
+    }
+
+    #premiumCurrencyMenu {
+        width: calc(100vw - 24px) !important;
+        max-height: 82vh !important;
+    }
+
+    #premiumCurrencyMenu .premium-currency-options {
+        max-height: 62vh !important;
+    }
+
+}
+
+/* Respect reduced-motion settings */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+
+}

@@ -24893,27 +24893,47 @@ if ("serviceWorker" in navigator) {
 
 })();
 /* =========================================================
-   BIZPILOT — COMPLETE DELETE SYSTEM
-   SALES + EXPENSES + INVENTORY + CUSTOMERS + INVOICES
+   BIZPILOT — PREMIUM DELETE CENTER
+   SALES • EXPENSES • INVENTORY • CUSTOMERS • INVOICES
    ========================================================= */
 
 (function () {
 
+    "use strict";
+
     /* =====================================================
-       BASIC HELPERS
+       DATA HELPERS
        ===================================================== */
 
-    function getAppData() {
+    function getBizPilotData() {
+
         try {
-            if (typeof appData !== "undefined" && appData) {
+            if (
+                typeof appData !== "undefined" &&
+                appData
+            ) {
                 return appData;
+            }
+        } catch (error) {}
+
+        try {
+            const stored = localStorage.getItem(
+                typeof STORAGE_KEY !== "undefined"
+                    ? STORAGE_KEY
+                    : "bizpilot_v2"
+            );
+
+            if (stored) {
+                return JSON.parse(stored);
             }
         } catch (error) {}
 
         return null;
     }
 
-    function saveLocalData() {
+
+    function saveBizPilotData() {
+
         try {
             if (typeof saveData === "function") {
                 saveData();
@@ -24922,41 +24942,38 @@ if ("serviceWorker" in navigator) {
         } catch (error) {}
 
         try {
-            const data = getAppData();
 
-            if (data) {
-                localStorage.setItem(
-                    typeof STORAGE_KEY !== "undefined"
-                        ? STORAGE_KEY
-                        : "bizpilot_v2",
-                    JSON.stringify(data)
-                );
-            }
+            const data = getBizPilotData();
+
+            if (!data) return;
+
+            localStorage.setItem(
+                typeof STORAGE_KEY !== "undefined"
+                    ? STORAGE_KEY
+                    : "bizpilot_v2",
+                JSON.stringify(data)
+            );
+
         } catch (error) {
+
             console.warn(
-                "BizPilot: Could not save local data.",
+                "BizPilot: Could not save deleted record.",
                 error
             );
+
         }
     }
 
-    function getSupabaseClient() {
-        try {
-            if (
-                typeof supabaseClient !== "undefined" &&
-                supabaseClient
-            ) {
-                return supabaseClient;
-            }
-        } catch (error) {}
+
+    function getSupabase() {
 
         try {
             if (
-                typeof supabase !== "undefined" &&
-                supabase &&
-                typeof supabase.from === "function"
+                typeof supabaseClient !== "undefined" &&
+                supabaseClient &&
+                typeof supabaseClient.from === "function"
             ) {
-                return supabase;
+                return supabaseClient;
             }
         } catch (error) {}
 
@@ -24973,939 +24990,28 @@ if ("serviceWorker" in navigator) {
     }
 
 
-    /* =====================================================
-       DELETE FROM CLOUD
-       ===================================================== */
-
-    async function deleteFromCloud(table, id) {
-
-        if (!id) return;
-
-        const client = getSupabaseClient();
-
-        if (!client) {
-            console.warn(
-                "BizPilot: Supabase client not available."
-            );
-            return;
-        }
-
-        try {
-
-            const result =
-                await client
-                    .from(table)
-                    .delete()
-                    .eq("id", id);
-
-            if (result && result.error) {
-                console.warn(
-                    "BizPilot: Cloud delete failed for " +
-                    table,
-                    result.error
-                );
-            }
-
-        } catch (error) {
-
-            console.warn(
-                "BizPilot: Cloud delete error for " +
-                table,
-                error
-            );
-
-        }
-
-    }
-
-
-    /* =====================================================
-       FIND RECORD ID
-       ===================================================== */
-
     function getRecordId(record) {
 
         if (!record) return null;
 
         return (
             record.id ??
+            record._id ??
+            record.uuid ??
             record.saleId ??
             record.expenseId ??
             record.inventoryId ??
             record.customerId ??
-            record._id ??
-            null
-        );
-
-    }
-
-
-    /* =====================================================
-       CONFIRM DELETE
-       ===================================================== */
-
-    function confirmDelete(type, record) {
-
-        let title = "this record";
-
-        if (type === "sales") {
-            title =
-                record.item ||
-                record.product ||
-                record.description ||
-                "this sale";
-        }
-
-        if (type === "expenses") {
-            title =
-                record.description ||
-                record.category ||
-                "this expense";
-        }
-
-        if (type === "inventory") {
-            title =
-                record.name ||
-                record.product ||
-                record.item ||
-                "this product";
-        }
-
-        if (type === "customers") {
-            title =
-                record.name ||
-                record.customer ||
-                record.customerName ||
-                "this customer";
-        }
-
-        if (type === "invoices") {
-            title =
-                record.invoiceNumber ||
-                "this invoice";
-        }
-
-        return window.confirm(
-            "Delete " +
-            title +
-            "?\n\n" +
-            "This action cannot be undone."
-        );
-
-    }
-
-
-    /* =====================================================
-       REFRESH BIZPILOT
-       ===================================================== */
-
-    function refreshBizPilotAfterDelete() {
-
-        try {
-            if (typeof refreshApp === "function") {
-                refreshApp();
-            }
-        } catch (error) {}
-
-        try {
-            if (typeof renderSales === "function") {
-                renderSales();
-            }
-        } catch (error) {}
-
-        try {
-            if (typeof renderExpenses === "function") {
-                renderExpenses();
-            }
-        } catch (error) {}
-
-        try {
-            if (typeof renderInventory === "function") {
-                renderInventory();
-            }
-        } catch (error) {}
-
-        try {
-            if (typeof renderCustomers === "function") {
-                renderCustomers();
-            }
-        } catch (error) {}
-
-        try {
-            if (typeof renderInvoices === "function") {
-                renderInvoices();
-            }
-        } catch (error) {}
-
-        try {
-            if (
-                typeof window.bizpilotUpdateCommandCenter ===
-                "function"
-            ) {
-                window.bizpilotUpdateCommandCenter();
-            }
-        } catch (error) {}
-
-        try {
-            if (
-                typeof window.bizpilotUpdateTodaysFocus ===
-                "function"
-            ) {
-                window.bizpilotUpdateTodaysFocus();
-            }
-        } catch (error) {}
-
-        try {
-            if (
-                typeof updateDashboard === "function"
-            ) {
-                updateDashboard();
-            }
-        } catch (error) {}
-
-    }
-/* ============================================================
-   BIZPILOT — FINAL UNIVERSAL DELETE SYSTEM
-   SALES • EXPENSES • INVENTORY • CUSTOMERS • INVOICES
-   ============================================================ */
-
-(function () {
-
-    /* ---------------------------------------------------------
-       HELPERS
-       --------------------------------------------------------- */
-
-    function getData() {
-        try {
-            if (typeof appData !== "undefined" && appData) {
-                return appData;
-            }
-        } catch (error) {}
-
-        try {
-            const stored = localStorage.getItem("bizpilot_v2");
-            if (stored) return JSON.parse(stored);
-        } catch (error) {}
-
-        return null;
-    }
-
-    function getId(record) {
-        if (!record) return null;
-
-        return (
-            record.id ??
-            record._id ??
-            record.uuid ??
-            record.record_id ??
-            record.invoiceId ??
-            record.saleId ??
-            record.expenseId ??
-            record.customerId ??
             record.productId ??
+            record.invoiceId ??
             null
         );
     }
 
-    function getDisplayName(record, type) {
-        if (!record) return "Record";
 
-        if (type === "sales") {
-            return (
-                record.description ||
-                record.item ||
-                record.product ||
-                record.name ||
-                "Sale"
-            );
-        }
-
-        if (type === "expenses") {
-            return (
-                record.description ||
-                record.category ||
-                record.name ||
-                "Expense"
-            );
-        }
-
-        if (type === "inventory") {
-            return (
-                record.name ||
-                record.product ||
-                record.item ||
-                "Inventory item"
-            );
-        }
-
-        if (type === "customers") {
-            return (
-                record.name ||
-                record.customerName ||
-                record.full_name ||
-                record.email ||
-                "Customer"
-            );
-        }
-
-        if (type === "invoices") {
-            return (
-                record.invoiceNumber ||
-                record.number ||
-                record.customer ||
-                "Invoice"
-            );
-        }
-
-        return "Record";
-    }
-
-    function getMoney(record, type) {
-        let value = 0;
-
-        if (type === "sales") {
-            value = record.amount ?? record.total ?? record.price ?? 0;
-        }
-
-        if (type === "expenses") {
-            value = record.amount ?? record.total ?? record.cost ?? 0;
-        }
-
-        if (type === "inventory") {
-            value =
-                record.quantity ??
-                record.stock ??
-                record.qty ??
-                0;
-        }
-
-        if (type === "customers") {
-            value = "";
-        }
-
-        if (type === "invoices") {
-            value =
-                record.amount ??
-                record.total ??
-                record.grandTotal ??
-                0;
-        }
-
-        if (value === "") return "";
-
-        try {
-            return Number(value).toLocaleString("en-KE", {
-                maximumFractionDigits: 2
-            });
-        } catch (error) {
-            return String(value);
-        }
-    }
-
-    function saveDataSafely() {
-        try {
-            if (typeof saveData === "function") {
-                saveData();
-                return;
-            }
-        } catch (error) {}
-
-        try {
-            localStorage.setItem(
-                "bizpilot_v2",
-                JSON.stringify(appData)
-            );
-        } catch (error) {}
-    }
-
-    async function deleteCloudRecord(type, id) {
-
-        if (!id) return;
-
-        try {
-            if (typeof deleteFromCloud === "function") {
-                await deleteFromCloud(type, id);
-                return;
-            }
-        } catch (error) {
-            console.warn(
-                "BizPilot cloud delete skipped:",
-                error
-            );
-        }
-
-        /* Direct Supabase fallback */
-        try {
-            if (
-                typeof supabaseClient !== "undefined" &&
-                supabaseClient
-            ) {
-                await supabaseClient
-                    .from(type)
-                    .delete()
-                    .eq("id", id);
-            }
-        } catch (error) {
-            console.warn(
-                "BizPilot Supabase delete skipped:",
-                error
-            );
-        }
-    }
-
-    function refreshAppAfterDelete(type) {
-
-        try {
-            if (typeof refreshApp === "function") {
-                refreshApp();
-            }
-        } catch (error) {}
-
-        try {
-            if (type === "invoices") {
-                if (
-                    typeof window.refreshInvoiceSystem ===
-                    "function"
-                ) {
-                    window.refreshInvoiceSystem();
-                }
-
-                if (
-                    typeof window.renderInvoices ===
-                    "function"
-                ) {
-                    window.renderInvoices();
-                }
-            }
-        } catch (error) {}
-
-        try {
-            if (
-                typeof window.bizpilotUpdateCommandCenter ===
-                "function"
-            ) {
-                window.bizpilotUpdateCommandCenter();
-            }
-
-            if (
-                typeof window.bizpilotUpdateTodaysFocus ===
-                "function"
-            ) {
-                window.bizpilotUpdateTodaysFocus();
-            }
-        } catch (error) {}
-
-        /* Force a small UI refresh without reloading the page */
-        setTimeout(function () {
-
-            try {
-                if (
-                    typeof window.renderInvoices ===
-                    "function" &&
-                    type === "invoices"
-                ) {
-                    window.renderInvoices();
-                }
-            } catch (error) {}
-
-        }, 150);
-    }
-
-
-    /* ---------------------------------------------------------
-       DELETE ONE RECORD
-       --------------------------------------------------------- */
-
-    async function performDelete(type, id) {
-
-        const data = getData();
-
-        if (!data) return;
-
-        const list = data[type];
-
-        if (!Array.isArray(list)) {
-            alert(
-                "BizPilot could not find the " +
-                type +
-                " records."
-            );
-            return;
-        }
-
-        const index = list.findIndex(function (record) {
-            return String(getId(record)) === String(id);
-        });
-
-        if (index === -1) {
-            alert("This record could not be found.");
-            return;
-        }
-
-        const record = list[index];
-
-        const name = getDisplayName(record, type);
-
-        const confirmed = window.confirm(
-            "Delete " +
-            name +
-            "?\n\nThis action cannot be undone."
-        );
-
-        if (!confirmed) return;
-
-        const cloudId = getId(record);
-
-        /* Remove locally first */
-        list.splice(index, 1);
-
-        saveDataSafely();
-
-        /* Remove from cloud where applicable */
-        if (
-            type === "sales" ||
-            type === "expenses" ||
-            type === "inventory" ||
-            type === "customers"
-        ) {
-            if (cloudId) {
-                await deleteCloudRecord(type, cloudId);
-            }
-        }
-
-        /* Close delete manager */
-        closeDeleteManager();
-
-        /* Refresh application */
-        refreshAppAfterDelete(type);
-
-        /* Reopen manager after refresh if needed */
-        setTimeout(function () {
-            openDeleteManager(type);
-        }, 350);
-    }
-
-
-    /* ---------------------------------------------------------
-       DELETE MANAGER STYLES
-       --------------------------------------------------------- */
-
-    function injectDeleteStyles() {
-
-        if (
-            document.getElementById(
-                "bizpilotDeleteSystemStyles"
-            )
-        ) {
-            return;
-        }
-
-        const style = document.createElement("style");
-
-        style.id =
-            "bizpilotDeleteSystemStyles";
-
-        style.textContent = `
-
-            .bizpilot-delete-manager-btn {
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                gap: 7px;
-                margin: 10px 0 14px;
-                padding: 9px 14px;
-                border: 1px solid #e4e7eb;
-                border-radius: 10px;
-                background: #ffffff;
-                color: #555b63;
-                font-size: 12px;
-                font-weight: 700;
-                cursor: pointer;
-                transition:
-                    background .18s ease,
-                    border-color .18s ease,
-                    color .18s ease,
-                    transform .18s ease;
-            }
-
-            .bizpilot-delete-manager-btn:hover {
-                background: #fff5f5;
-                border-color: #f0b8b8;
-                color: #d62828;
-                transform: translateY(-1px);
-            }
-
-            .bizpilot-delete-overlay {
-                position: fixed;
-                inset: 0;
-                z-index: 99999999;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                padding: 18px;
-                background: rgba(17,17,17,.58);
-                backdrop-filter: blur(6px);
-            }
-
-            .bizpilot-delete-modal {
-                width: min(560px, 100%);
-                max-height: 82vh;
-                overflow: hidden;
-                background: #ffffff;
-                border-radius: 20px;
-                box-shadow:
-                    0 25px 70px rgba(0,0,0,.22);
-                display: flex;
-                flex-direction: column;
-            }
-
-            .bizpilot-delete-head {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                gap: 15px;
-                padding: 20px 22px;
-                border-bottom: 1px solid #edf0f3;
-            }
-
-            .bizpilot-delete-head h3 {
-                margin: 0;
-                font-size: 18px;
-                color: #111111;
-            }
-
-            .bizpilot-delete-head p {
-                margin: 4px 0 0;
-                font-size: 12px;
-                color: #858b94;
-            }
-
-            .bizpilot-delete-close {
-                width: 34px;
-                height: 34px;
-                border: 0;
-                border-radius: 50%;
-                background: #f3f5f7;
-                color: #555;
-                cursor: pointer;
-                font-size: 18px;
-                line-height: 1;
-            }
-
-            .bizpilot-delete-list {
-                padding: 12px;
-                overflow-y: auto;
-                max-height: 58vh;
-            }
-
-            .bizpilot-delete-item {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                gap: 12px;
-                padding: 13px;
-                margin-bottom: 8px;
-                border: 1px solid #edf0f3;
-                border-radius: 13px;
-                background: #ffffff;
-            }
-
-            .bizpilot-delete-item-info {
-                min-width: 0;
-                flex: 1;
-            }
-
-            .bizpilot-delete-item-name {
-                display: block;
-                color: #111111;
-                font-size: 13px;
-                font-weight: 800;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-
-            .bizpilot-delete-item-meta {
-                display: block;
-                margin-top: 4px;
-                color: #8a9098;
-                font-size: 11px;
-            }
-
-            .bizpilot-delete-one {
-                flex: 0 0 auto;
-                border: 0;
-                border-radius: 9px;
-                padding: 8px 11px;
-                background: #fff1f1;
-                color: #d62828;
-                font-size: 11px;
-                font-weight: 800;
-                cursor: pointer;
-            }
-
-            .bizpilot-delete-one:hover {
-                background: #d62828;
-                color: #ffffff;
-            }
-
-            .bizpilot-delete-empty {
-                padding: 35px 20px;
-                text-align: center;
-                color: #858b94;
-                font-size: 13px;
-            }
-
-            @media (max-width: 600px) {
-
-                .bizpilot-delete-overlay {
-                    padding: 12px;
-                }
-
-                .bizpilot-delete-modal {
-                    max-height: 88vh;
-                    border-radius: 17px;
-                }
-
-                .bizpilot-delete-head {
-                    padding: 16px;
-                }
-
-                .bizpilot-delete-list {
-                    max-height: 68vh;
-                    padding: 10px;
-                }
-
-                .bizpilot-delete-item {
-                    padding: 11px;
-                }
-
-                .bizpilot-delete-one {
-                    padding: 8px 9px;
-                }
-
-            }
-
-        `;
-
-        document.head.appendChild(style);
-    }
-
-
-    /* ---------------------------------------------------------
-       CREATE DELETE MANAGER
-       --------------------------------------------------------- */
-
-    function openDeleteManager(type) {
-
-        closeDeleteManager();
-
-        const data = getData();
-
-        if (!data) return;
-
-        const records = Array.isArray(data[type])
-            ? data[type]
-            : [];
-
-        const titles = {
-            sales: "Delete Sales",
-            expenses: "Delete Expenses",
-            inventory: "Delete Inventory",
-            customers: "Delete Customers",
-            invoices: "Delete Invoices"
-        };
-
-        const descriptions = {
-            sales:
-                "Choose a sale you want to remove.",
-            expenses:
-                "Choose an expense you want to remove.",
-            inventory:
-                "Choose an inventory item you want to remove.",
-            customers:
-                "Choose a customer you want to remove.",
-            invoices:
-                "Choose an invoice you want to remove."
-        };
-
-        const overlay =
-            document.createElement("div");
-
-        overlay.className =
-            "bizpilot-delete-overlay";
-
-        overlay.id =
-            "bizpilotDeleteOverlay";
-
-        const modal =
-            document.createElement("div");
-
-        modal.className =
-            "bizpilot-delete-modal";
-
-        const head =
-            document.createElement("div");
-
-        head.className =
-            "bizpilot-delete-head";
-
-        head.innerHTML = `
-            <div>
-                <h3>${titles[type] || "Delete Records"}</h3>
-                <p>${descriptions[type] || ""}</p>
-            </div>
-
-            <button
-                type="button"
-                class="bizpilot-delete-close"
-                id="bizpilotDeleteClose"
-                aria-label="Close"
-            >×</button>
-        `;
-
-        const list =
-            document.createElement("div");
-
-        list.className =
-            "bizpilot-delete-list";
-
-        if (!records.length) {
-
-            list.innerHTML = `
-                <div class="bizpilot-delete-empty">
-                    There are no records to delete.
-                </div>
-            `;
-
-        } else {
-
-            records.forEach(function (record) {
-
-                const id = getId(record);
-
-                if (id === null || id === undefined) {
-                    return;
-                }
-
-                const item =
-                    document.createElement("div");
-
-                item.className =
-                    "bizpilot-delete-item";
-
-                const name =
-                    getDisplayName(record, type);
-
-                const money =
-                    getMoney(record, type);
-
-                let meta = "";
-
-                if (type === "inventory") {
-                    meta =
-                        "Stock: " +
-                        (money || "0");
-                } else if (type === "customers") {
-                    meta =
-                        record.phone ||
-                        record.email ||
-                        "Customer record";
-                } else if (type === "invoices") {
-                    meta =
-                        money
-                            ? "Amount: " + money
-                            : "Invoice record";
-                } else {
-                    meta =
-                        money
-                            ? "Amount: " + money
-                            : "Record";
-                }
-
-                item.innerHTML = `
-                    <div class="bizpilot-delete-item-info">
-                        <span class="bizpilot-delete-item-name">
-                            ${escapeDeleteText(name)}
-                        </span>
-
-                        <span class="bizpilot-delete-item-meta">
-                            ${escapeDeleteText(meta)}
-                        </span>
-                    </div>
-
-                    <button
-                        type="button"
-                        class="bizpilot-delete-one"
-                        data-delete-type="${type}"
-                        data-delete-id="${escapeDeleteText(String(id))}"
-                    >
-                        Delete
-                    </button>
-                `;
-
-                list.appendChild(item);
-            });
-        }
-
-        modal.appendChild(head);
-        modal.appendChild(list);
-
-        overlay.appendChild(modal);
-
-        document.body.appendChild(overlay);
-
-        document
-            .getElementById("bizpilotDeleteClose")
-            .addEventListener(
-                "click",
-                closeDeleteManager
-            );
-
-        overlay.addEventListener(
-            "click",
-            function (event) {
-
-                if (event.target === overlay) {
-                    closeDeleteManager();
-                }
-
-            }
-        );
-
-        list.addEventListener(
-            "click",
-            function (event) {
-
-                const button =
-                    event.target.closest(
-                        ".bizpilot-delete-one"
-                    );
-
-                if (!button) return;
-
-                const deleteType =
-                    button.dataset.deleteType;
-
-                const deleteId =
-                    button.dataset.deleteId;
-
-                if (!deleteType || !deleteId) {
-                    return;
-                }
-
-                performDelete(
-                    deleteType,
-                    deleteId
-                );
-            }
-        );
-    }
-
-
-    /* ---------------------------------------------------------
-       ESCAPE TEXT
-       --------------------------------------------------------- */
+    /* =====================================================
+       TEXT HELPERS
+       ===================================================== */
 
     function escapeDeleteText(value) {
 
@@ -25918,865 +25024,7 @@ if ("serviceWorker" in navigator) {
     }
 
 
-    /* ---------------------------------------------------------
-       CLOSE DELETE MANAGER
-       --------------------------------------------------------- */
-
-    function closeDeleteManager() {
-
-        const overlay =
-            document.getElementById(
-                "bizpilotDeleteOverlay"
-            );
-
-        if (overlay) {
-            overlay.remove();
-        }
-    }
-
-
-    /* ---------------------------------------------------------
-       ADD DELETE CONTROLS TO SECTIONS
-       --------------------------------------------------------- */
-
-    function addDeleteControls() {
-
-        const sections = [
-            {
-                id: "sales",
-                type: "sales",
-                label: "Delete Sales"
-            },
-            {
-                id: "expenses",
-                type: "expenses",
-                label: "Delete Expenses"
-            },
-            {
-                id: "inventory",
-                type: "inventory",
-                label: "Delete Inventory"
-            },
-            {
-                id: "customers",
-                type: "customers",
-                label: "Delete Customers"
-            },
-            {
-                id: "invoices",
-                type: "invoices",
-                label: "Delete Invoices"
-            }
-        ];
-
-        sections.forEach(function (config) {
-
-            const section =
-                document.getElementById(config.id);
-
-            if (!section) return;
-
-            if (
-                section.querySelector(
-                    ".bizpilot-delete-manager-btn"
-                )
-            ) {
-                return;
-            }
-
-            const button =
-                document.createElement("button");
-
-            button.type = "button";
-
-            button.className =
-                "bizpilot-delete-manager-btn";
-
-            button.innerHTML =
-                "🗑 Delete Records";
-
-            button.addEventListener(
-                "click",
-                function (event) {
-
-                    event.preventDefault();
-                    event.stopPropagation();
-
-                    openDeleteManager(
-                        config.type
-                    );
-                }
-            );
-
-            /*
-             * Put the button near the beginning
-             * of the section without replacing
-             * existing content.
-             */
-            const firstChild =
-                section.firstElementChild;
-
-            if (firstChild) {
-                firstChild.insertAdjacentElement(
-                    "afterend",
-                    button
-                );
-            } else {
-                section.appendChild(button);
-            }
-
-        });
-    }
-
-
-    /* ---------------------------------------------------------
-       PUBLIC FUNCTIONS
-       --------------------------------------------------------- */
-
-    window.bizpilotDeleteSale =
-        function (id) {
-            performDelete("sales", id);
-        };
-
-    window.bizpilotDeleteExpense =
-        function (id) {
-            performDelete("expenses", id);
-        };
-
-    window.bizpilotDeleteInventory =
-        function (id) {
-            performDelete("inventory", id);
-        };
-
-    window.bizpilotDeleteCustomer =
-        function (id) {
-            performDelete("customers", id);
-        };
-
-    window.bizpilotDeleteInvoice =
-        function (id) {
-            performDelete("invoices", id);
-        };
-
-    window.bizpilotOpenDeleteManager =
-        openDeleteManager;
-
-
-    /* ---------------------------------------------------------
-       START SYSTEM
-       --------------------------------------------------------- */
-
-    function startDeleteSystem() {
-
-        injectDeleteStyles();
-
-        setTimeout(
-            addDeleteControls,
-            1200
-        );
-    }
-
-
-    if (
-        document.readyState === "loading"
-    ) {
-
-        document.addEventListener(
-            "DOMContentLoaded",
-            startDeleteSystem,
-            { once: true }
-        );
-
-    } else {
-
-        startDeleteSystem();
-
-    }
-
-
-    /* ---------------------------------------------------------
-       WATCH FOR PAGE CHANGES
-       --------------------------------------------------------- */
-
-    const observer =
-        new MutationObserver(function () {
-
-            setTimeout(
-                addDeleteControls,
-                150
-            );
-
-        });
-
-    setTimeout(function () {
-
-        if (document.body) {
-
-            observer.observe(
-                document.body,
-                {
-                    childList: true,
-                    subtree: true
-                }
-            );
-
-        }
-
-    }, 1800);
-
-
-})();
-/* ============================================================
-   BIZPILOT — FINAL DELETE BUTTON SYSTEM
-   Uses the EXISTING delete functions already in app.js
-   SALES • EXPENSES • INVENTORY • CUSTOMERS • INVOICES
-   ============================================================ */
-
-(function () {
-
-    /* ---------------------------------------------------------
-       REMOVE OLD DELETE SYSTEMS IF THEY EXIST
-       --------------------------------------------------------- */
-
-    function removeOldDeleteSystems() {
-
-        const oldIds = [
-            "bizpilotFinalDeleteButton",
-            "bizpilotFinalDeleteOverlay",
-            "bizpilotDeleteOverlay"
-        ];
-
-        oldIds.forEach(function (id) {
-
-            const element =
-                document.getElementById(id);
-
-            if (element) {
-                element.remove();
-            }
-
-        });
-
-        document
-            .querySelectorAll(
-                ".bizpilot-delete-manager-btn"
-            )
-            .forEach(function (button) {
-                button.remove();
-            });
-
-    }
-
-
-    /* ---------------------------------------------------------
-       STYLES
-       --------------------------------------------------------- */
-
-    function addDeleteStyles() {
-
-        if (
-            document.getElementById(
-                "bizpilotRealDeleteStyles"
-            )
-        ) {
-            return;
-        }
-
-        const style =
-            document.createElement("style");
-
-        style.id =
-            "bizpilotRealDeleteStyles";
-
-        style.textContent = `
-
-            /* =========================================
-               DELETE RECORDS BUTTON
-               ========================================= */
-
-            #bizpilotRealDeleteButton {
-
-                position: fixed !important;
-
-                right: 20px !important;
-                bottom: 20px !important;
-
-                z-index: 2147483647 !important;
-
-                display: flex !important;
-
-                align-items: center !important;
-                justify-content: center !important;
-
-                width: 160px !important;
-                height: 46px !important;
-
-                padding: 0 15px !important;
-
-                background: #ffffff !important;
-
-                color: #d62828 !important;
-
-                border: 1.5px solid #d62828 !important;
-
-                border-radius: 12px !important;
-
-                box-shadow:
-                    0 8px 25px rgba(17,17,17,.18) !important;
-
-                font-family: inherit !important;
-
-                font-size: 12px !important;
-
-                font-weight: 800 !important;
-
-                cursor: pointer !important;
-
-                opacity: 1 !important;
-
-                visibility: visible !important;
-
-                pointer-events: auto !important;
-
-                transition:
-                    .18s ease !important;
-            }
-
-
-            #bizpilotRealDeleteButton:hover {
-
-                background: #d62828 !important;
-
-                color: #ffffff !important;
-
-                transform:
-                    translateY(-2px) !important;
-
-                box-shadow:
-                    0 12px 30px
-                    rgba(214,40,40,.25) !important;
-            }
-
-
-            #bizpilotRealDeleteButton:active {
-
-                transform:
-                    translateY(0) !important;
-            }
-
-
-            /* =========================================
-               DELETE MENU
-               ========================================= */
-
-            #bizpilotRealDeleteMenu {
-
-                position: fixed !important;
-
-                right: 20px !important;
-                bottom: 78px !important;
-
-                z-index: 2147483646 !important;
-
-                width: 230px !important;
-
-                padding: 8px !important;
-
-                background: #ffffff !important;
-
-                border: 1px solid #e8ebef !important;
-
-                border-radius: 15px !important;
-
-                box-shadow:
-                    0 15px 45px
-                    rgba(17,17,17,.18) !important;
-
-                display: none !important;
-            }
-
-
-            #bizpilotRealDeleteMenu.open {
-
-                display: block !important;
-            }
-
-
-            .bizpilot-real-delete-title {
-
-                padding: 9px 10px 7px !important;
-
-                color: #858b94 !important;
-
-                font-size: 9px !important;
-
-                font-weight: 800 !important;
-
-                letter-spacing: .8px !important;
-
-                text-transform: uppercase !important;
-            }
-
-
-            .bizpilot-real-delete-option {
-
-                display: flex !important;
-
-                align-items: center !important;
-
-                width: 100% !important;
-
-                min-height: 40px !important;
-
-                padding: 0 11px !important;
-
-                margin: 2px 0 !important;
-
-                background: #ffffff !important;
-
-                color: #222222 !important;
-
-                border: 0 !important;
-
-                border-radius: 9px !important;
-
-                font-family: inherit !important;
-
-                font-size: 12px !important;
-
-                font-weight: 700 !important;
-
-                text-align: left !important;
-
-                cursor: pointer !important;
-            }
-
-
-            .bizpilot-real-delete-option:hover {
-
-                background: #fff2f2 !important;
-
-                color: #d62828 !important;
-            }
-
-
-            /* =========================================
-               DELETE CONFIRMATION PANEL
-               ========================================= */
-
-            #bizpilotRealDeleteConfirm {
-
-                position: fixed !important;
-
-                inset: 0 !important;
-
-                z-index: 2147483647 !important;
-
-                display: none !important;
-
-                align-items: center !important;
-
-                justify-content: center !important;
-
-                padding: 20px !important;
-
-                background:
-                    rgba(17,17,17,.55) !important;
-
-                backdrop-filter:
-                    blur(5px) !important;
-            }
-
-
-            #bizpilotRealDeleteConfirm.open {
-
-                display: flex !important;
-            }
-
-
-            .bizpilot-real-delete-box {
-
-                width:
-                    min(420px, calc(100vw - 30px)) !important;
-
-                padding: 24px !important;
-
-                background: #ffffff !important;
-
-                border-radius: 18px !important;
-
-                box-shadow:
-                    0 25px 70px
-                    rgba(0,0,0,.25) !important;
-
-                text-align: center !important;
-            }
-
-
-            .bizpilot-real-delete-box h3 {
-
-                margin: 0 0 7px !important;
-
-                color: #111111 !important;
-
-                font-size: 18px !important;
-
-                font-weight: 800 !important;
-            }
-
-
-            .bizpilot-real-delete-box p {
-
-                margin: 0 0 20px !important;
-
-                color: #7c838c !important;
-
-                font-size: 12px !important;
-
-                line-height: 1.5 !important;
-            }
-
-
-            .bizpilot-real-delete-actions {
-
-                display: flex !important;
-
-                justify-content: center !important;
-
-                gap: 9px !important;
-            }
-
-
-            .bizpilot-real-delete-cancel,
-            .bizpilot-real-delete-confirm {
-
-                min-width: 105px !important;
-
-                height: 40px !important;
-
-                padding: 0 15px !important;
-
-                border-radius: 9px !important;
-
-                font-family: inherit !important;
-
-                font-size: 11px !important;
-
-                font-weight: 800 !important;
-
-                cursor: pointer !important;
-            }
-
-
-            .bizpilot-real-delete-cancel {
-
-                background: #f3f5f7 !important;
-
-                color: #555d66 !important;
-
-                border: 1px solid #e3e6ea !important;
-            }
-
-
-            .bizpilot-real-delete-confirm {
-
-                background: #d62828 !important;
-
-                color: #ffffff !important;
-
-                border: 1px solid #d62828 !important;
-            }
-
-
-            /* =========================================
-               MOBILE
-               ========================================= */
-
-            @media (max-width: 600px) {
-
-                #bizpilotRealDeleteButton {
-
-                    right: 12px !important;
-
-                    bottom: 12px !important;
-
-                    width: 145px !important;
-
-                    height: 44px !important;
-
-                    font-size: 11px !important;
-                }
-
-
-                #bizpilotRealDeleteMenu {
-
-                    right: 12px !important;
-
-                    bottom: 66px !important;
-
-                    width: 210px !important;
-                }
-
-            }
-
-        `;
-
-        document.head.appendChild(style);
-    }
-
-
-    /* ---------------------------------------------------------
-       CREATE DELETE BUTTON
-       --------------------------------------------------------- */
-
-    function createDeleteButton() {
-
-        if (
-            document.getElementById(
-                "bizpilotRealDeleteButton"
-            )
-        ) {
-            return;
-        }
-
-        const button =
-            document.createElement("button");
-
-        button.type = "button";
-
-        button.id =
-            "bizpilotRealDeleteButton";
-
-        button.textContent =
-            "🗑 Delete Records";
-
-        button.title =
-            "Delete BizPilot records";
-
-        button.addEventListener(
-            "click",
-            function (event) {
-
-                event.preventDefault();
-
-                event.stopPropagation();
-
-                toggleDeleteMenu();
-
-            }
-        );
-
-        document.body.appendChild(button);
-    }
-
-
-    /* ---------------------------------------------------------
-       CREATE DELETE MENU
-       --------------------------------------------------------- */
-
-    function createDeleteMenu() {
-
-        if (
-            document.getElementById(
-                "bizpilotRealDeleteMenu"
-            )
-        ) {
-            return;
-        }
-
-        const menu =
-            document.createElement("div");
-
-        menu.id =
-            "bizpilotRealDeleteMenu";
-
-        menu.innerHTML = `
-
-            <div
-                class="bizpilot-real-delete-title"
-            >
-                Choose what to delete
-            </div>
-
-            <button
-                type="button"
-                class="bizpilot-real-delete-option"
-                data-delete-type="sales"
-            >
-                🧾 Sales
-            </button>
-
-            <button
-                type="button"
-                class="bizpilot-real-delete-option"
-                data-delete-type="expenses"
-            >
-                💸 Expenses
-            </button>
-
-            <button
-                type="button"
-                class="bizpilot-real-delete-option"
-                data-delete-type="inventory"
-            >
-                📦 Inventory
-            </button>
-
-            <button
-                type="button"
-                class="bizpilot-real-delete-option"
-                data-delete-type="customers"
-            >
-                👤 Customers
-            </button>
-
-            <button
-                type="button"
-                class="bizpilot-real-delete-option"
-                data-delete-type="invoices"
-            >
-                🧾 Invoices
-            </button>
-
-        `;
-
-        document.body.appendChild(menu);
-
-
-        menu.addEventListener(
-            "click",
-            function (event) {
-
-                const option =
-                    event.target.closest(
-                        ".bizpilot-real-delete-option"
-                    );
-
-                if (!option) return;
-
-                const type =
-                    option.dataset.deleteType;
-
-                closeDeleteMenu();
-
-                showRecordChooser(type);
-
-            }
-        );
-    }
-
-
-    /* ---------------------------------------------------------
-       TOGGLE MENU
-       --------------------------------------------------------- */
-
-    function toggleDeleteMenu() {
-
-        createDeleteMenu();
-
-        const menu =
-            document.getElementById(
-                "bizpilotRealDeleteMenu"
-            );
-
-        if (!menu) return;
-
-        menu.classList.toggle("open");
-    }
-
-
-    function closeDeleteMenu() {
-
-        const menu =
-            document.getElementById(
-                "bizpilotRealDeleteMenu"
-            );
-
-        if (menu) {
-            menu.classList.remove("open");
-        }
-    }
-
-
-    /* ---------------------------------------------------------
-       GET APP DATA
-       --------------------------------------------------------- */
-
-    function getData() {
-
-        try {
-
-            if (
-                typeof getAppData ===
-                "function"
-            ) {
-
-                return getAppData();
-
-            }
-
-        } catch (error) {}
-
-
-        try {
-
-            if (
-                typeof appData !==
-                "undefined"
-            ) {
-
-                return appData;
-
-            }
-
-        } catch (error) {}
-
-
-        return null;
-    }
-
-
-    /* ---------------------------------------------------------
-       GET RECORD ID
-       --------------------------------------------------------- */
-
-    function getId(record) {
-
-        if (!record) return null;
-
-        try {
-
-            if (
-                typeof getRecordId ===
-                "function"
-            ) {
-
-                return getRecordId(record);
-
-            }
-
-        } catch (error) {}
-
-
-        return (
-            record.id ??
-            record._id ??
-            record.uuid ??
-            record.invoiceId ??
-            record.saleId ??
-            record.expenseId ??
-            record.customerId ??
-            record.productId ??
-            null
-        );
-    }
-
-
-    /* ---------------------------------------------------------
-       RECORD NAME
-       --------------------------------------------------------- */
-
-    function getName(record, type) {
+    function getRecordName(record, type) {
 
         if (!record) {
             return "Record";
@@ -26791,6 +25039,7 @@ if ("serviceWorker" in navigator) {
                 record.name ||
                 "Sale"
             );
+
         }
 
 
@@ -26802,6 +25051,7 @@ if ("serviceWorker" in navigator) {
                 record.name ||
                 "Expense"
             );
+
         }
 
 
@@ -26813,6 +25063,7 @@ if ("serviceWorker" in navigator) {
                 record.item ||
                 "Inventory item"
             );
+
         }
 
 
@@ -26825,6 +25076,7 @@ if ("serviceWorker" in navigator) {
                 record.email ||
                 "Customer"
             );
+
         }
 
 
@@ -26836,6 +25088,7 @@ if ("serviceWorker" in navigator) {
                 record.customer ||
                 "Invoice"
             );
+
         }
 
 
@@ -26843,296 +25096,364 @@ if ("serviceWorker" in navigator) {
     }
 
 
-    /* ---------------------------------------------------------
-       RECORD CHOOSER
-       --------------------------------------------------------- */
+    function getRecordMeta(record, type) {
 
-    function showRecordChooser(type) {
-
-        const data = getData();
-
-        if (!data) return;
-
-        const records =
-            Array.isArray(data[type])
-                ? data[type]
-                : [];
+        if (!record) {
+            return "Record";
+        }
 
 
-        if (!records.length) {
+        if (type === "sales") {
+
+            const amount =
+                record.amount ??
+                record.total ??
+                record.price ??
+                0;
+
+            const customer =
+                record.customer ||
+                record.customerName ||
+                "";
+
+            if (customer) {
+                return (
+                    "Customer: " +
+                    String(customer) +
+                    " • " +
+                    formatDeleteMoney(amount)
+                );
+            }
+
+            return formatDeleteMoney(amount);
+        }
+
+
+        if (type === "expenses") {
+
+            const amount =
+                record.amount ??
+                record.total ??
+                record.cost ??
+                0;
+
+            const category =
+                record.category ||
+                "";
+
+            if (category) {
+                return (
+                    String(category) +
+                    " • " +
+                    formatDeleteMoney(amount)
+                );
+            }
+
+            return formatDeleteMoney(amount);
+        }
+
+
+        if (type === "inventory") {
+
+            const quantity =
+                record.quantity ??
+                record.stock ??
+                record.qty ??
+                0;
+
+            return "Stock: " + String(quantity);
+        }
+
+
+        if (type === "customers") {
+
+            return (
+                record.phone ||
+                record.email ||
+                "Customer record"
+            );
+        }
+
+
+        if (type === "invoices") {
+
+            const amount =
+                record.amount ??
+                record.total ??
+                record.grandTotal ??
+                0;
+
+            if (amount) {
+                return (
+                    "Amount: " +
+                    formatDeleteMoney(amount)
+                );
+            }
+
+            return (
+                record.customer ||
+                "Invoice record"
+            );
+        }
+
+
+        return "Record";
+    }
+
+
+    function formatDeleteMoney(value) {
+
+        const number = Number(value);
+
+        if (!Number.isFinite(number)) {
+            return String(value || "0");
+        }
+
+        let currency = "KSh";
+
+        try {
+
+            if (
+                typeof appData !== "undefined" &&
+                appData &&
+                appData.business &&
+                appData.business.currency
+            ) {
+                currency =
+                    appData.business.currency;
+            }
+
+        } catch (error) {}
+
+        return (
+            String(currency) +
+            " " +
+            number.toLocaleString(
+                "en-KE",
+                {
+                    maximumFractionDigits: 2
+                }
+            )
+        );
+    }
+
+
+    /* =====================================================
+       CLOUD DELETE
+       ===================================================== */
+
+    async function deleteCloudRecord(type, id) {
+
+        if (!id) return;
+
+        /*
+         * Invoices are currently localStorage-only
+         * in this version of BizPilot.
+         */
+        if (type === "invoices") {
+            return;
+        }
+
+        const client = getSupabase();
+
+        if (!client) {
+            return;
+        }
+
+        try {
+
+            const result = await client
+                .from(type)
+                .delete()
+                .eq("id", id);
+
+            if (
+                result &&
+                result.error
+            ) {
+
+                console.warn(
+                    "BizPilot: Cloud delete failed.",
+                    result.error
+                );
+
+            }
+
+        } catch (error) {
+
+            console.warn(
+                "BizPilot: Cloud delete skipped.",
+                error
+            );
+
+        }
+    }
+
+
+    /* =====================================================
+       REFRESH APP
+       ===================================================== */
+
+    function refreshAfterDelete(type) {
+
+        try {
+            if (
+                typeof refreshApp ===
+                "function"
+            ) {
+                refreshApp();
+            }
+        } catch (error) {}
+
+
+        try {
+            if (
+                typeof renderSales ===
+                "function"
+            ) {
+                renderSales();
+            }
+        } catch (error) {}
+
+
+        try {
+            if (
+                typeof renderExpenses ===
+                "function"
+            ) {
+                renderExpenses();
+            }
+        } catch (error) {}
+
+
+        try {
+            if (
+                typeof renderInventory ===
+                "function"
+            ) {
+                renderInventory();
+            }
+        } catch (error) {}
+
+
+        try {
+            if (
+                typeof renderCustomers ===
+                "function"
+            ) {
+                renderCustomers();
+            }
+        } catch (error) {}
+
+
+        try {
+            if (
+                typeof renderInvoices ===
+                "function"
+            ) {
+                renderInvoices();
+            }
+        } catch (error) {}
+
+
+        try {
+            if (
+                typeof window.refreshInvoiceSystem ===
+                "function"
+            ) {
+                window.refreshInvoiceSystem();
+            }
+        } catch (error) {}
+
+
+        try {
+            if (
+                typeof window.bizpilotUpdateCommandCenter ===
+                "function"
+            ) {
+                window.bizpilotUpdateCommandCenter();
+            }
+        } catch (error) {}
+
+
+        try {
+            if (
+                typeof window.bizpilotUpdateTodaysFocus ===
+                "function"
+            ) {
+                window.bizpilotUpdateTodaysFocus();
+            }
+        } catch (error) {}
+
+
+        try {
+            if (
+                typeof updateDashboard ===
+                "function"
+            ) {
+                updateDashboard();
+            }
+        } catch (error) {}
+    }
+
+
+    /* =====================================================
+       DELETE RECORD
+       ===================================================== */
+
+    async function deleteRecord(type, id) {
+
+        const data = getBizPilotData();
+
+        if (!data) {
+            alert(
+                "BizPilot could not load your business data."
+            );
+            return;
+        }
+
+
+        if (!Array.isArray(data[type])) {
 
             alert(
-                "There are no " +
+                "BizPilot could not find the " +
                 type +
-                " records to delete."
+                " records."
             );
 
             return;
         }
 
 
-        const old =
-            document.getElementById(
-                "bizpilotRecordChooser"
-            );
-
-        if (old) old.remove();
+        const records = data[type];
 
 
-        const overlay =
-            document.createElement("div");
-
-        overlay.id =
-            "bizpilotRecordChooser";
-
-        overlay.style.cssText = `
-            position:fixed;
-            inset:0;
-            z-index:2147483647;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            padding:18px;
-            background:rgba(17,17,17,.58);
-            backdrop-filter:blur(6px);
-        `;
-
-
-        const box =
-            document.createElement("div");
-
-        box.style.cssText = `
-            width:min(520px,calc(100vw - 30px));
-            max-height:80vh;
-            overflow:hidden;
-            background:#ffffff;
-            border-radius:18px;
-            box-shadow:0 25px 70px rgba(0,0,0,.25);
-            display:flex;
-            flex-direction:column;
-        `;
-
-
-        const title =
-            document.createElement("div");
-
-        title.style.cssText = `
-            padding:20px;
-            border-bottom:1px solid #edf0f3;
-            font-size:17px;
-            font-weight:800;
-            color:#111111;
-        `;
-
-        title.innerHTML =
-            "Delete " +
-            type.charAt(0).toUpperCase() +
-            type.slice(1);
-
-
-        const list =
-            document.createElement("div");
-
-        list.style.cssText = `
-            padding:12px;
-            overflow-y:auto;
-            max-height:60vh;
-        `;
-
-
-        records.forEach(
+        const index = records.findIndex(
             function (record) {
 
-                const id =
-                    getId(record);
-
-                if (
-                    id === null ||
-                    id === undefined
-                ) {
-                    return;
-                }
-
-
-                const row =
-                    document.createElement("div");
-
-                row.style.cssText = `
-                    display:flex;
-                    align-items:center;
-                    justify-content:space-between;
-                    gap:12px;
-                    padding:12px;
-                    margin-bottom:7px;
-                    border:1px solid #edf0f3;
-                    border-radius:12px;
-                `;
-
-
-                const info =
-                    document.createElement("div");
-
-                info.style.cssText = `
-                    min-width:0;
-                    flex:1;
-                `;
-
-
-                const name =
-                    document.createElement("strong");
-
-                name.textContent =
-                    getName(
-                        record,
-                        type
-                    );
-
-                name.style.cssText = `
-                    display:block;
-                    color:#111111;
-                    font-size:12px;
-                    font-weight:800;
-                    overflow:hidden;
-                    text-overflow:ellipsis;
-                    white-space:nowrap;
-                `;
-
-
-                const deleteButton =
-                    document.createElement("button");
-
-                deleteButton.type =
-                    "button";
-
-                deleteButton.textContent =
-                    "Delete";
-
-                deleteButton.style.cssText = `
-                    flex:0 0 auto;
-                    min-width:65px;
-                    height:34px;
-                    border:0;
-                    border-radius:8px;
-                    background:#fff0f0;
-                    color:#d62828;
-                    font-family:inherit;
-                    font-size:10px;
-                    font-weight:800;
-                    cursor:pointer;
-                `;
-
-
-                deleteButton.addEventListener(
-                    "click",
-                    function () {
-
-                        confirmAndDelete(
-                            type,
-                            id
-                        );
-
-                    }
-                );
-
-
-                info.appendChild(name);
-
-                row.appendChild(info);
-
-                row.appendChild(
-                    deleteButton
-                );
-
-                list.appendChild(row);
+                return String(
+                    getRecordId(record)
+                ) === String(id);
 
             }
         );
 
 
-        const close =
-            document.createElement("button");
+        if (index === -1) {
 
-        close.type =
-            "button";
-
-        close.textContent =
-            "Cancel";
-
-        close.style.cssText = `
-            margin:0 12px 12px;
-            height:40px;
-            border:1px solid #e2e6ea;
-            border-radius:9px;
-            background:#f5f6f7;
-            color:#555d66;
-            font-family:inherit;
-            font-size:11px;
-            font-weight:800;
-            cursor:pointer;
-        `;
-
-
-        close.addEventListener(
-            "click",
-            function () {
-
-                overlay.remove();
-
-            }
-        );
-
-
-        box.appendChild(title);
-
-        box.appendChild(list);
-
-        box.appendChild(close);
-
-        overlay.appendChild(box);
-
-        document.body.appendChild(
-            overlay
-        );
-    }
-
-
-    /* ---------------------------------------------------------
-       CONFIRM + CALL EXISTING DELETE FUNCTION
-       --------------------------------------------------------- */
-
-    function confirmAndDelete(
-        type,
-        id
-    ) {
-
-        const data = getData();
-
-        if (!data) return;
-
-
-        const records =
-            Array.isArray(data[type])
-                ? data[type]
-                : [];
-
-
-        const record =
-            records.find(
-                function (item) {
-
-                    return String(
-                        getId(item)
-                    ) === String(id);
-
-                }
+            alert(
+                "This record could not be found."
             );
 
+            return;
+        }
 
-        if (!record) return;
+
+        const record = records[index];
 
 
         const name =
-            getName(
+            getRecordName(
                 record,
                 type
             );
@@ -27142,273 +25463,1332 @@ if ("serviceWorker" in navigator) {
             window.confirm(
                 "Delete " +
                 name +
-                "?\n\nThis action cannot be undone."
+                "?\n\n" +
+                "This action cannot be undone."
             );
 
 
-        if (!confirmed) return;
+        if (!confirmed) {
+            return;
+        }
+
+
+        const cloudId =
+            getRecordId(record);
 
 
         /*
-         * IMPORTANT:
-         * Use the REAL delete functions
-         * already inside your BizPilot app.
+         * Remove locally first.
          */
-
-        if (
-            type === "sales" &&
-            typeof deleteSale ===
-            "function"
-        ) {
-
-            deleteSale(id);
-
-            return;
-        }
+        records.splice(index, 1);
 
 
-        if (
-            type === "expenses" &&
-            typeof deleteExpense ===
-            "function"
-        ) {
-
-            deleteExpense(id);
-
-            return;
-        }
+        saveBizPilotData();
 
 
-        if (
-            type === "inventory" &&
-            typeof deleteInventory ===
-            "function"
-        ) {
+        /*
+         * Remove from Supabase.
+         */
+        if (cloudId) {
 
-            deleteInventory(id);
+            await deleteCloudRecord(
+                type,
+                cloudId
+            );
 
-            return;
-        }
-
-
-        if (
-            type === "customers" &&
-            typeof deleteCustomer ===
-            "function"
-        ) {
-
-            deleteCustomer(id);
-
-            return;
-        }
-
-
-        if (
-            type === "invoices" &&
-            typeof deleteInvoice ===
-            "function"
-        ) {
-
-            deleteInvoice(id);
-
-            return;
         }
 
 
         /*
-         * Fallback only if the original
-         * functions are unavailable.
+         * Close modal.
          */
+        closeDeleteCenter();
 
-        fallbackDelete(
-            type,
-            id
+
+        /*
+         * Refresh application.
+         */
+        refreshAfterDelete(type);
+
+    }
+
+
+    /* =====================================================
+       DELETE CENTER STYLES
+       ===================================================== */
+
+    function addDeleteCenterStyles() {
+
+        if (
+            document.getElementById(
+                "bizpilotPremiumDeleteStyles"
+            )
+        ) {
+            return;
+        }
+
+
+        const style =
+            document.createElement("style");
+
+
+        style.id =
+            "bizpilotPremiumDeleteStyles";
+
+
+        style.textContent = `
+
+            /* =========================================
+               MAIN DELETE BUTTON
+               ========================================= */
+
+            #bizpilotPremiumDeleteButton {
+
+                position: fixed !important;
+
+                right: 20px !important;
+
+                bottom: 20px !important;
+
+                z-index: 99999999 !important;
+
+                display: inline-flex !important;
+
+                align-items: center !important;
+
+                justify-content: center !important;
+
+                gap: 7px !important;
+
+                width: 160px !important;
+
+                height: 46px !important;
+
+                padding: 0 15px !important;
+
+                border: 1px solid #e5e8ec !important;
+
+                border-radius: 13px !important;
+
+                background: #ffffff !important;
+
+                color: #d62828 !important;
+
+                box-shadow:
+                    0 10px 30px
+                    rgba(17,17,17,.16) !important;
+
+                font-family: inherit !important;
+
+                font-size: 12px !important;
+
+                font-weight: 800 !important;
+
+                cursor: pointer !important;
+
+                transition:
+                    transform .18s ease,
+                    box-shadow .18s ease,
+                    background .18s ease !important;
+
+            }
+
+
+            #bizpilotPremiumDeleteButton:hover {
+
+                transform:
+                    translateY(-2px) !important;
+
+                background:
+                    #fff6f6 !important;
+
+                border-color:
+                    #f0b4b4 !important;
+
+                box-shadow:
+                    0 14px 34px
+                    rgba(214,40,40,.16) !important;
+
+            }
+
+
+            #bizpilotPremiumDeleteButton:active {
+
+                transform:
+                    translateY(0) !important;
+
+            }
+
+
+            /* =========================================
+               OVERLAY
+               ========================================= */
+
+            #bizpilotPremiumDeleteOverlay {
+
+                position: fixed !important;
+
+                inset: 0 !important;
+
+                z-index: 100000000 !important;
+
+                display: flex !important;
+
+                align-items: center !important;
+
+                justify-content: center !important;
+
+                padding: 18px !important;
+
+                background:
+                    rgba(17,17,17,.58) !important;
+
+                backdrop-filter:
+                    blur(7px) !important;
+
+                -webkit-backdrop-filter:
+                    blur(7px) !important;
+
+            }
+
+
+            /* =========================================
+               MODAL
+               ========================================= */
+
+            .bizpilot-premium-delete-modal {
+
+                width:
+                    min(650px, 100%) !important;
+
+                max-height:
+                    84vh !important;
+
+                overflow:
+                    hidden !important;
+
+                display:
+                    flex !important;
+
+                flex-direction:
+                    column !important;
+
+                background:
+                    #ffffff !important;
+
+                border:
+                    1px solid #edf0f3 !important;
+
+                border-radius:
+                    22px !important;
+
+                box-shadow:
+                    0 30px 90px
+                    rgba(0,0,0,.28) !important;
+
+            }
+
+
+            /* =========================================
+               HEADER
+               ========================================= */
+
+            .bizpilot-premium-delete-header {
+
+                display:
+                    flex !important;
+
+                align-items:
+                    center !important;
+
+                justify-content:
+                    space-between !important;
+
+                gap:
+                    15px !important;
+
+                padding:
+                    21px 23px !important;
+
+                border-bottom:
+                    1px solid #edf0f3 !important;
+
+            }
+
+
+            .bizpilot-premium-delete-heading {
+
+                min-width:
+                    0 !important;
+
+            }
+
+
+            .bizpilot-premium-delete-heading strong {
+
+                display:
+                    block !important;
+
+                margin:
+                    0 !important;
+
+                color:
+                    #111111 !important;
+
+                font-size:
+                    19px !important;
+
+                font-weight:
+                    850 !important;
+
+                line-height:
+                    1.2 !important;
+
+            }
+
+
+            .bizpilot-premium-delete-heading small {
+
+                display:
+                    block !important;
+
+                margin-top:
+                    5px !important;
+
+                color:
+                    #858b94 !important;
+
+                font-size:
+                    11px !important;
+
+                line-height:
+                    1.4 !important;
+
+            }
+
+
+            #bizpilotPremiumDeleteClose {
+
+                flex:
+                    0 0 auto !important;
+
+                width:
+                    36px !important;
+
+                height:
+                    36px !important;
+
+                border:
+                    0 !important;
+
+                border-radius:
+                    50% !important;
+
+                background:
+                    #f3f5f7 !important;
+
+                color:
+                    #555d66 !important;
+
+                font-size:
+                    20px !important;
+
+                line-height:
+                    1 !important;
+
+                cursor:
+                    pointer !important;
+
+            }
+
+
+            #bizpilotPremiumDeleteClose:hover {
+
+                background:
+                    #111111 !important;
+
+                color:
+                    #ffffff !important;
+
+            }
+
+
+            /* =========================================
+               TABS
+               ========================================= */
+
+            .bizpilot-premium-delete-tabs {
+
+                display:
+                    flex !important;
+
+                gap:
+                    7px !important;
+
+                padding:
+                    12px 14px !important;
+
+                overflow-x:
+                    auto !important;
+
+                border-bottom:
+                    1px solid #edf0f3 !important;
+
+                scrollbar-width:
+                    thin !important;
+
+            }
+
+
+            .bizpilot-premium-delete-tab {
+
+                flex:
+                    0 0 auto !important;
+
+                min-height:
+                    36px !important;
+
+                padding:
+                    0 13px !important;
+
+                border:
+                    1px solid #e6e9ed !important;
+
+                border-radius:
+                    9px !important;
+
+                background:
+                    #ffffff !important;
+
+                color:
+                    #666d76 !important;
+
+                font-family:
+                    inherit !important;
+
+                font-size:
+                    11px !important;
+
+                font-weight:
+                    750 !important;
+
+                cursor:
+                    pointer !important;
+
+                transition:
+                    .18s ease !important;
+
+            }
+
+
+            .bizpilot-premium-delete-tab:hover {
+
+                border-color:
+                    #0396FF !important;
+
+                color:
+                    #0396FF !important;
+
+            }
+
+
+            .bizpilot-premium-delete-tab.active {
+
+                background:
+                    #0396FF !important;
+
+                border-color:
+                    #0396FF !important;
+
+                color:
+                    #ffffff !important;
+
+            }
+
+
+            /* =========================================
+               LIST
+               ========================================= */
+
+            .bizpilot-premium-delete-list {
+
+                overflow-y:
+                    auto !important;
+
+                padding:
+                    13px !important;
+
+                max-height:
+                    57vh !important;
+
+                -webkit-overflow-scrolling:
+                    touch !important;
+
+            }
+
+
+            .bizpilot-premium-delete-list::-webkit-scrollbar {
+
+                width:
+                    7px !important;
+
+            }
+
+
+            .bizpilot-premium-delete-list::-webkit-scrollbar-track {
+
+                background:
+                    #f1f3f5 !important;
+
+                border-radius:
+                    20px !important;
+
+            }
+
+
+            .bizpilot-premium-delete-list::-webkit-scrollbar-thumb {
+
+                background:
+                    #c7cdd4 !important;
+
+                border-radius:
+                    20px !important;
+
+            }
+
+
+            .bizpilot-premium-delete-list::-webkit-scrollbar-thumb:hover {
+
+                background:
+                    #0396FF !important;
+
+            }
+
+
+            /* =========================================
+               RECORD CARD
+               ========================================= */
+
+            .bizpilot-premium-delete-record {
+
+                display:
+                    flex !important;
+
+                align-items:
+                    center !important;
+
+                justify-content:
+                    space-between !important;
+
+                gap:
+                    12px !important;
+
+                padding:
+                    13px !important;
+
+                margin-bottom:
+                    8px !important;
+
+                border:
+                    1px solid #edf0f3 !important;
+
+                border-radius:
+                    13px !important;
+
+                background:
+                    #ffffff !important;
+
+                transition:
+                    border-color .18s ease,
+                    box-shadow .18s ease,
+                    transform .18s ease !important;
+
+            }
+
+
+            .bizpilot-premium-delete-record:hover {
+
+                border-color:
+                    #dce2e8 !important;
+
+                box-shadow:
+                    0 6px 18px
+                    rgba(17,17,17,.06) !important;
+
+                transform:
+                    translateY(-1px) !important;
+
+            }
+
+
+            .bizpilot-premium-delete-info {
+
+                min-width:
+                    0 !important;
+
+                flex:
+                    1 !important;
+
+            }
+
+
+            .bizpilot-premium-delete-name {
+
+                display:
+                    block !important;
+
+                overflow:
+                    hidden !important;
+
+                color:
+                    #111111 !important;
+
+                font-size:
+                    13px !important;
+
+                font-weight:
+                    800 !important;
+
+                line-height:
+                    1.3 !important;
+
+                white-space:
+                    nowrap !important;
+
+                text-overflow:
+                    ellipsis !important;
+
+            }
+
+
+            .bizpilot-premium-delete-meta {
+
+                display:
+                    block !important;
+
+                margin-top:
+                    4px !important;
+
+                overflow:
+                    hidden !important;
+
+                color:
+                    #858b94 !important;
+
+                font-size:
+                    10px !important;
+
+                line-height:
+                    1.3 !important;
+
+                white-space:
+                    nowrap !important;
+
+                text-overflow:
+                    ellipsis !important;
+
+            }
+
+
+            .bizpilot-premium-delete-action {
+
+                flex:
+                    0 0 auto !important;
+
+                min-width:
+                    66px !important;
+
+                height:
+                    34px !important;
+
+                padding:
+                    0 10px !important;
+
+                border:
+                    1px solid #f1caca !important;
+
+                border-radius:
+                    9px !important;
+
+                background:
+                    #fff4f4 !important;
+
+                color:
+                    #d62828 !important;
+
+                font-family:
+                    inherit !important;
+
+                font-size:
+                    10px !important;
+
+                font-weight:
+                    800 !important;
+
+                cursor:
+                    pointer !important;
+
+                transition:
+                    .18s ease !important;
+
+            }
+
+
+            .bizpilot-premium-delete-action:hover {
+
+                background:
+                    #d62828 !important;
+
+                border-color:
+                    #d62828 !important;
+
+                color:
+                    #ffffff !important;
+
+            }
+
+
+            /* =========================================
+               EMPTY STATE
+               ========================================= */
+
+            .bizpilot-premium-delete-empty {
+
+                padding:
+                    55px 20px !important;
+
+                text-align:
+                    center !important;
+
+                color:
+                    #858b94 !important;
+
+                font-size:
+                    13px !important;
+
+            }
+
+
+            /* =========================================
+               MOBILE
+               ========================================= */
+
+            @media (max-width: 600px) {
+
+                #bizpilotPremiumDeleteButton {
+
+                    right:
+                        12px !important;
+
+                    bottom:
+                        12px !important;
+
+                    width:
+                        145px !important;
+
+                    height:
+                        44px !important;
+
+                    font-size:
+                        11px !important;
+
+                }
+
+
+                #bizpilotPremiumDeleteOverlay {
+
+                    padding:
+                        10px !important;
+
+                }
+
+
+                .bizpilot-premium-delete-modal {
+
+                    width:
+                        100% !important;
+
+                    max-height:
+                        90vh !important;
+
+                    border-radius:
+                        18px !important;
+
+                }
+
+
+                .bizpilot-premium-delete-header {
+
+                    padding:
+                        17px !important;
+
+                }
+
+
+                .bizpilot-premium-delete-heading strong {
+
+                    font-size:
+                        17px !important;
+
+                }
+
+
+                .bizpilot-premium-delete-list {
+
+                    max-height:
+                        64vh !important;
+
+                    padding:
+                        10px !important;
+
+                }
+
+
+                .bizpilot-premium-delete-record {
+
+                    padding:
+                        11px !important;
+
+                }
+
+
+                .bizpilot-premium-delete-action {
+
+                    min-width:
+                        62px !important;
+
+                    height:
+                        36px !important;
+
+                }
+
+            }
+
+        `;
+
+
+        document.head.appendChild(style);
+    }
+
+
+    /* =====================================================
+       CLOSE DELETE CENTER
+       ===================================================== */
+
+    function closeDeleteCenter() {
+
+        const overlay =
+            document.getElementById(
+                "bizpilotPremiumDeleteOverlay"
+            );
+
+        if (overlay) {
+            overlay.remove();
+        }
+    }
+
+
+    /* =====================================================
+       RENDER RECORD LIST
+       ===================================================== */
+
+    function renderDeleteRecords(
+        type,
+        list
+    ) {
+
+        list.innerHTML = "";
+
+
+        const data =
+            getBizPilotData();
+
+
+        if (!data) {
+            return;
+        }
+
+
+        const records =
+            Array.isArray(data[type])
+                ? data[type]
+                : [];
+
+
+        if (!records.length) {
+
+            list.innerHTML = `
+                <div class="bizpilot-premium-delete-empty">
+                    There are no ${escapeDeleteText(type)}
+                    records to delete.
+                </div>
+            `;
+
+            return;
+        }
+
+
+        records.forEach(
+            function (record) {
+
+                const id =
+                    getRecordId(record);
+
+
+                if (
+                    id === null ||
+                    id === undefined
+                ) {
+                    return;
+                }
+
+
+                const name =
+                    getRecordName(
+                        record,
+                        type
+                    );
+
+
+                const meta =
+                    getRecordMeta(
+                        record,
+                        type
+                    );
+
+
+                const row =
+                    document.createElement("div");
+
+
+                row.className =
+                    "bizpilot-premium-delete-record";
+
+
+                row.innerHTML = `
+
+                    <div class="bizpilot-premium-delete-info">
+
+                        <span class="bizpilot-premium-delete-name">
+                            ${escapeDeleteText(name)}
+                        </span>
+
+                        <span class="bizpilot-premium-delete-meta">
+                            ${escapeDeleteText(meta)}
+                        </span>
+
+                    </div>
+
+                    <button
+                        type="button"
+                        class="bizpilot-premium-delete-action"
+                        data-delete-type="${escapeDeleteText(type)}"
+                        data-delete-id="${escapeDeleteText(String(id))}"
+                    >
+                        Delete
+                    </button>
+
+                `;
+
+
+                list.appendChild(row);
+
+            }
         );
     }
 
 
-    /* ---------------------------------------------------------
-       FALLBACK DELETE
-       --------------------------------------------------------- */
+    /* =====================================================
+       OPEN DELETE CENTER
+       ===================================================== */
 
-    async function fallbackDelete(
-        type,
-        id
+    function openDeleteCenter(
+        initialType
     ) {
 
-        const data = getData();
-
-        if (!data) return;
+        closeDeleteCenter();
 
 
-        if (
-            !Array.isArray(
-                data[type]
-            )
-        ) {
-            return;
-        }
+        const overlay =
+            document.createElement("div");
 
 
-        const index =
-            data[type].findIndex(
-                function (record) {
+        overlay.id =
+            "bizpilotPremiumDeleteOverlay";
 
-                    return String(
-                        getId(record)
-                    ) === String(id);
 
+        const modal =
+            document.createElement("div");
+
+
+        modal.className =
+            "bizpilot-premium-delete-modal";
+
+
+        const header =
+            document.createElement("div");
+
+
+        header.className =
+            "bizpilot-premium-delete-header";
+
+
+        header.innerHTML = `
+
+            <div class="bizpilot-premium-delete-heading">
+
+                <strong>
+                    Delete Records
+                </strong>
+
+                <small>
+                    Permanently remove business records
+                </small>
+
+            </div>
+
+            <button
+                type="button"
+                id="bizpilotPremiumDeleteClose"
+                aria-label="Close delete center"
+            >
+                ×
+            </button>
+
+        `;
+
+
+        const tabs =
+            document.createElement("div");
+
+
+        tabs.className =
+            "bizpilot-premium-delete-tabs";
+
+
+        const list =
+            document.createElement("div");
+
+
+        list.className =
+            "bizpilot-premium-delete-list";
+
+
+        const types = [
+            ["sales", "Sales"],
+            ["expenses", "Expenses"],
+            ["inventory", "Inventory"],
+            ["customers", "Customers"],
+            ["invoices", "Invoices"]
+        ];
+
+
+        let activeType =
+            types.some(
+                function (item) {
+                    return item[0] === initialType;
                 }
-            );
+            )
+                ? initialType
+                : "sales";
 
 
-        if (index === -1) return;
+        types.forEach(
+            function (item) {
+
+                const type =
+                    item[0];
+
+                const label =
+                    item[1];
 
 
-        const record =
-            data[type][index];
+                const tab =
+                    document.createElement("button");
 
 
-        const cloudId =
-            getId(record);
+                tab.type =
+                    "button";
 
 
-        data[type].splice(
-            index,
-            1
+                tab.className =
+                    "bizpilot-premium-delete-tab";
+
+
+                tab.dataset.deleteTab =
+                    type;
+
+
+                tab.textContent =
+                    label;
+
+
+                if (type === activeType) {
+                    tab.classList.add("active");
+                }
+
+
+                tabs.appendChild(tab);
+
+            }
         );
 
 
-        try {
+        modal.appendChild(header);
+        modal.appendChild(tabs);
+        modal.appendChild(list);
 
-            if (
-                typeof saveLocalData ===
-                "function"
-            ) {
+        overlay.appendChild(modal);
 
-                saveLocalData();
+        document.body.appendChild(overlay);
 
-            } else if (
-                typeof saveData ===
-                "function"
-            ) {
 
-                saveData();
+        function updateList(type) {
+
+            activeType =
+                type;
+
+
+            tabs
+                .querySelectorAll(
+                    ".bizpilot-premium-delete-tab"
+                )
+                .forEach(
+                    function (tab) {
+
+                        tab.classList.toggle(
+                            "active",
+                            tab.dataset.deleteTab ===
+                            activeType
+                        );
+
+                    }
+                );
+
+
+            renderDeleteRecords(
+                activeType,
+                list
+            );
+        }
+
+
+        updateList(activeType);
+
+
+        document
+            .getElementById(
+                "bizpilotPremiumDeleteClose"
+            )
+            .addEventListener(
+                "click",
+                closeDeleteCenter
+            );
+
+
+        tabs.addEventListener(
+            "click",
+            function (event) {
+
+                const tab =
+                    event.target.closest(
+                        ".bizpilot-premium-delete-tab"
+                    );
+
+
+                if (!tab) return;
+
+
+                const type =
+                    tab.dataset.deleteTab;
+
+
+                if (!type) return;
+
+
+                updateList(type);
 
             }
+        );
 
-        } catch (error) {}
+
+        list.addEventListener(
+            "click",
+            async function (event) {
+
+                const button =
+                    event.target.closest(
+                        ".bizpilot-premium-delete-action"
+                    );
 
 
-        if (
-            cloudId &&
-            (
-                type === "sales" ||
-                type === "expenses" ||
-                type === "inventory" ||
-                type === "customers"
-            )
-        ) {
+                if (!button) {
+                    return;
+                }
 
-            try {
+
+                const type =
+                    button.dataset.deleteType;
+
+
+                const id =
+                    button.dataset.deleteId;
+
 
                 if (
-                    typeof deleteFromCloud ===
-                    "function"
+                    !type ||
+                    !id
                 ) {
+                    return;
+                }
 
-                    await deleteFromCloud(
+
+                await deleteRecord(
+                    type,
+                    id
+                );
+
+
+                /*
+                 * Re-open the correct tab/list
+                 * after the record is removed.
+                 */
+                const currentOverlay =
+                    document.getElementById(
+                        "bizpilotPremiumDeleteOverlay"
+                    );
+
+
+                if (!currentOverlay) {
+                    return;
+                }
+
+
+                const currentList =
+                    currentOverlay.querySelector(
+                        ".bizpilot-premium-delete-list"
+                    );
+
+
+                if (currentList) {
+
+                    renderDeleteRecords(
                         type,
-                        cloudId
+                        currentList
                     );
 
                 }
 
-            } catch (error) {
+            }
+        );
 
-                console.warn(
-                    "Cloud delete warning:",
-                    error
+
+        overlay.addEventListener(
+            "click",
+            function (event) {
+
+                if (
+                    event.target ===
+                    overlay
+                ) {
+                    closeDeleteCenter();
+                }
+
+            }
+        );
+
+
+        document.addEventListener(
+            "keydown",
+            function deleteEscapeHandler(event) {
+
+                if (
+                    event.key !== "Escape"
+                ) {
+                    return;
+                }
+
+
+                closeDeleteCenter();
+
+
+                document.removeEventListener(
+                    "keydown",
+                    deleteEscapeHandler
                 );
 
             }
+        );
 
-        }
-
-
-        try {
-
-            if (
-                typeof refreshBizPilotAfterDelete ===
-                "function"
-            ) {
-
-                refreshBizPilotAfterDelete();
-
-            } else if (
-                typeof refreshApp ===
-                "function"
-            ) {
-
-                refreshApp();
-
-            }
-
-        } catch (error) {}
     }
 
 
-    /* ---------------------------------------------------------
-       CLOSE MENU WHEN CLICKING OUTSIDE
-       --------------------------------------------------------- */
+    /* =====================================================
+       CREATE MAIN DELETE BUTTON
+       ===================================================== */
 
-    document.addEventListener(
-        "click",
-        function (event) {
+    function createDeleteCenterButton() {
 
-            const menu =
-                document.getElementById(
-                    "bizpilotRealDeleteMenu"
+        if (
+            document.getElementById(
+                "bizpilotPremiumDeleteButton"
+            )
+        ) {
+            return;
+        }
+
+
+        const button =
+            document.createElement("button");
+
+
+        button.type =
+            "button";
+
+
+        button.id =
+            "bizpilotPremiumDeleteButton";
+
+
+        button.innerHTML =
+            "🗑 Delete Records";
+
+
+        button.title =
+            "Open BizPilot Delete Center";
+
+
+        button.addEventListener(
+            "click",
+            function (event) {
+
+                event.preventDefault();
+
+                event.stopPropagation();
+
+                openDeleteCenter(
+                    "sales"
                 );
-
-            const button =
-                document.getElementById(
-                    "bizpilotRealDeleteButton"
-                );
-
-            if (
-                menu &&
-                button &&
-                !menu.contains(
-                    event.target
-                ) &&
-                !button.contains(
-                    event.target
-                )
-            ) {
-
-                closeDeleteMenu();
 
             }
-
-        },
-        true
-    );
+        );
 
 
-    /* ---------------------------------------------------------
+        document.body.appendChild(
+            button
+        );
+    }
+
+
+    /* =====================================================
        START
-       --------------------------------------------------------- */
+       ===================================================== */
 
-    function startDeleteSystem() {
+    function startPremiumDeleteCenter() {
 
-        removeOldDeleteSystems();
+        addDeleteCenterStyles();
 
-        addDeleteStyles();
-
-        createDeleteButton();
-
-        createDeleteMenu();
+        createDeleteCenterButton();
 
     }
 
@@ -27423,8 +26803,8 @@ if ("serviceWorker" in navigator) {
             function () {
 
                 setTimeout(
-                    startDeleteSystem,
-                    1000
+                    startPremiumDeleteCenter,
+                    900
                 );
 
             },
@@ -27436,445 +26816,592 @@ if ("serviceWorker" in navigator) {
     } else {
 
         setTimeout(
-            startDeleteSystem,
-            1000
+            startPremiumDeleteCenter,
+            900
         );
+
     }
 
 
-    /* ---------------------------------------------------------
+    /* =====================================================
        PUBLIC ACCESS
-       --------------------------------------------------------- */
+       ===================================================== */
 
-    window.bizpilotOpenDeleteMenu =
-        toggleDeleteMenu;
+    window.bizpilotOpenDeleteCenter =
+        function (type) {
+
+            openDeleteCenter(
+                type || "sales"
+            );
+
+        };
+
+
+    window.bizpilotCloseDeleteCenter =
+        closeDeleteCenter;
+
 
 })();
 /* =========================================================
-   BIZPILOT — DELETE RECORDS BUTTON
-   Uses existing delete functions
+   BIZPILOT — FINAL APP RESTORE / STABILITY PATCH
+   Add this block at the VERY BOTTOM of app.js
    ========================================================= */
 
 (function () {
 
-    function startDeleteButton() {
+    "use strict";
 
-        if (document.getElementById("bizpilotDeleteButton")) {
-            return;
+
+    /* -----------------------------------------------------
+       1. KEEP APP DATA SAFE
+       ----------------------------------------------------- */
+
+    function restoreAppData() {
+
+        try {
+
+            if (typeof appData === "undefined") return;
+
+            appData.business =
+                appData.business || {
+                    name: "My Business",
+                    currency: "Ksh"
+                };
+
+            appData.sales =
+                Array.isArray(appData.sales)
+                    ? appData.sales
+                    : [];
+
+            appData.expenses =
+                Array.isArray(appData.expenses)
+                    ? appData.expenses
+                    : [];
+
+            appData.customers =
+                Array.isArray(appData.customers)
+                    ? appData.customers
+                    : [];
+
+            appData.inventory =
+                Array.isArray(appData.inventory)
+                    ? appData.inventory
+                    : [];
+
+        } catch (error) {
+
+            console.warn(
+                "BizPilot data protection:",
+                error
+            );
+
         }
 
-        const button = document.createElement("button");
-
-        button.id = "bizpilotDeleteButton";
-        button.type = "button";
-        button.textContent = "🗑 Delete Records";
-
-        button.style.cssText = `
-            position: fixed !important;
-            right: 20px !important;
-            bottom: 20px !important;
-            z-index: 999999999 !important;
-
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-
-            width: 160px !important;
-            height: 48px !important;
-
-            background: #ffffff !important;
-            color: #d62828 !important;
-
-            border: 2px solid #d62828 !important;
-            border-radius: 12px !important;
-
-            font-family: Arial, sans-serif !important;
-            font-size: 12px !important;
-            font-weight: 800 !important;
-
-            cursor: pointer !important;
-
-            box-shadow:
-                0 8px 25px rgba(0,0,0,.20) !important;
-        `;
-
-        button.onclick = function () {
-
-            showDeleteMenu();
-
-        };
-
-        document.body.appendChild(button);
     }
 
 
-    function showDeleteMenu() {
+    /* -----------------------------------------------------
+       2. SAFE APP REFRESH
+       ----------------------------------------------------- */
 
-        const old =
-            document.getElementById(
-                "bizpilotDeleteMenu"
+    function safeRefresh() {
+
+        try {
+
+            restoreAppData();
+
+            if (
+                typeof refreshApp === "function"
+            ) {
+
+                refreshApp();
+
+            }
+
+        } catch (error) {
+
+            console.warn(
+                "BizPilot refresh skipped:",
+                error
             );
 
-        if (old) {
-            old.remove();
-            return;
         }
 
-        const menu =
-            document.createElement("div");
-
-        menu.id =
-            "bizpilotDeleteMenu";
-
-        menu.style.cssText = `
-            position: fixed !important;
-
-            right: 20px !important;
-            bottom: 78px !important;
-
-            z-index: 1000000000 !important;
-
-            width: 240px !important;
-
-            padding: 12px !important;
-
-            background: #ffffff !important;
-
-            border: 1px solid #e5e7eb !important;
-            border-radius: 15px !important;
-
-            box-shadow:
-                0 15px 45px rgba(0,0,0,.20) !important;
-        `;
-
-        menu.innerHTML = `
-
-            <div style="
-                padding:8px;
-                margin-bottom:5px;
-                color:#777;
-                font-size:10px;
-                font-weight:800;
-                text-transform:uppercase;
-                letter-spacing:.7px;
-            ">
-                Choose records
-            </div>
-
-            <button data-type="sales">
-                🧾 Sales
-            </button>
-
-            <button data-type="expenses">
-                💸 Expenses
-            </button>
-
-            <button data-type="inventory">
-                📦 Inventory
-            </button>
-
-            <button data-type="customers">
-                👤 Customers
-            </button>
-
-            <button data-type="invoices">
-                🧾 Invoices
-            </button>
-        `;
-
-
-        menu.querySelectorAll("button")
-            .forEach(function (button) {
-
-                button.style.cssText = `
-                    display:block;
-                    width:100%;
-                    min-height:40px;
-                    margin:4px 0;
-                    padding:0 12px;
-                    background:#ffffff;
-                    color:#222;
-                    border:0;
-                    border-radius:9px;
-                    text-align:left;
-                    font-family:inherit;
-                    font-size:12px;
-                    font-weight:700;
-                    cursor:pointer;
-                `;
-
-                button.onmouseenter =
-                    function () {
-                        button.style.background =
-                            "#f1f7ff";
-                        button.style.color =
-                            "#0396FF";
-                    };
-
-                button.onmouseleave =
-                    function () {
-                        button.style.background =
-                            "#ffffff";
-                        button.style.color =
-                            "#222";
-                    };
-
-                button.onclick =
-                    function () {
-
-                        chooseRecord(
-                            button.dataset.type
-                        );
-
-                    };
-
-            });
-
-
-        document.body.appendChild(menu);
     }
 
 
-    function chooseRecord(type) {
+    /* -----------------------------------------------------
+       3. KEEP DASHBOARD WORKING
+       ----------------------------------------------------- */
 
-        const menu =
-            document.getElementById(
-                "bizpilotDeleteMenu"
-            );
-
-        if (menu) {
-            menu.remove();
-        }
-
-
-        let data = null;
+    function refreshDashboardExtras() {
 
         try {
 
             if (
-                typeof appData !==
-                "undefined"
+                typeof window.bizpilotUpdateCommandCenter ===
+                "function"
             ) {
-                data = appData;
+
+                window.bizpilotUpdateCommandCenter();
+
             }
 
         } catch (error) {}
 
+        try {
 
-        if (!data) {
+            if (
+                typeof window.bizpilotUpdateTodaysFocus ===
+                "function"
+            ) {
 
-            alert(
-                "BizPilot data is not available."
-            );
+                window.bizpilotUpdateTodaysFocus();
 
-            return;
-        }
+            }
 
+        } catch (error) {}
 
-        const records =
-            Array.isArray(data[type])
-                ? data[type]
-                : [];
-
-
-        if (!records.length) {
-
-            alert(
-                "There are no " +
-                type +
-                " records to delete."
-            );
-
-            return;
-        }
-
-
-        const names =
-            records.map(
-                function (record, index) {
-
-                    let name = "";
-
-                    if (type === "sales") {
-                        name =
-                            record.item ||
-                            record.product ||
-                            record.description ||
-                            "Sale";
-                    }
-
-                    if (type === "expenses") {
-                        name =
-                            record.description ||
-                            record.category ||
-                            "Expense";
-                    }
-
-                    if (type === "inventory") {
-                        name =
-                            record.name ||
-                            record.product ||
-                            record.item ||
-                            "Inventory item";
-                    }
-
-                    if (type === "customers") {
-                        name =
-                            record.name ||
-                            record.customerName ||
-                            record.email ||
-                            "Customer";
-                    }
-
-                    if (type === "invoices") {
-                        name =
-                            record.invoiceNumber ||
-                            record.customer ||
-                            "Invoice";
-                    }
-
-                    return (
-                        (index + 1) +
-                        ". " +
-                        name
-                    );
-                }
-            );
-
-
-        const answer =
-            window.prompt(
-                "Type the NUMBER of the record you want to delete:\n\n" +
-                names.join("\n") +
-                "\n\nCancel = do nothing."
-            );
-
-
-        if (
-            answer === null ||
-            answer.trim() === ""
-        ) {
-            return;
-        }
-
-
-        const number =
-            Number(answer);
-
-
-        if (
-            !Number.isInteger(number) ||
-            number < 1 ||
-            number > records.length
-        ) {
-
-            alert(
-                "Please enter a valid record number."
-            );
-
-            return;
-        }
-
-
-        const record =
-            records[number - 1];
-
-
-        const id =
-            record.id ??
-            record._id ??
-            record.uuid ??
-            record.invoiceId ??
-            record.saleId ??
-            record.expenseId ??
-            record.customerId ??
-            record.productId;
-
-
-        if (
-            id === null ||
-            id === undefined
-        ) {
-
-            alert(
-                "This record does not have a valid ID."
-            );
-
-            return;
-        }
-
-
-        const confirmed =
-            window.confirm(
-                "Delete this record?\n\n" +
-                names[number - 1] +
-                "\n\nThis cannot be undone."
-            );
-
-
-        if (!confirmed) {
-            return;
-        }
-
-
-        /* USE EXISTING DELETE FUNCTIONS */
-
-        if (
-            type === "sales" &&
-            typeof deleteSale === "function"
-        ) {
-            deleteSale(id);
-            return;
-        }
-
-
-        if (
-            type === "expenses" &&
-            typeof deleteExpense === "function"
-        ) {
-            deleteExpense(id);
-            return;
-        }
-
-
-        if (
-            type === "inventory" &&
-            typeof deleteInventory === "function"
-        ) {
-            deleteInventory(id);
-            return;
-        }
-
-
-        if (
-            type === "customers" &&
-            typeof deleteCustomer === "function"
-        ) {
-            deleteCustomer(id);
-            return;
-        }
-
-
-        if (
-            type === "invoices" &&
-            typeof deleteInvoice === "function"
-        ) {
-            deleteInvoice(id);
-            return;
-        }
-
-
-        alert(
-            "The delete function for " +
-            type +
-            " could not be found."
-        );
     }
 
 
-    function start() {
+    /* -----------------------------------------------------
+       4. RESTORE NAVIGATION
+       ----------------------------------------------------- */
 
-        startDeleteButton();
+    document.addEventListener(
+        "click",
+        function (event) {
+
+            const navItem =
+                event.target.closest(".nav-item");
+
+            if (!navItem) return;
+
+            const pageId =
+                navItem.dataset.page;
+
+            if (!pageId) return;
+
+            setTimeout(function () {
+
+                try {
+
+                    if (
+                        typeof updatePageHeader ===
+                        "function"
+                    ) {
+
+                        updatePageHeader(pageId);
+
+                    }
+
+                } catch (error) {}
+
+                try {
+
+                    if (
+                        typeof refreshApp ===
+                        "function"
+                    ) {
+
+                        refreshApp();
+
+                    }
+
+                } catch (error) {}
+
+                refreshDashboardExtras();
+
+            }, 80);
+
+        },
+        true
+    );
+
+
+    /* -----------------------------------------------------
+       5. RESTORE PAGE REFRESH AFTER DATA CHANGES
+       ----------------------------------------------------- */
+
+    document.addEventListener(
+        "bizpilot:data-updated",
+        function () {
+
+            setTimeout(function () {
+
+                try {
+
+                    if (
+                        typeof refreshApp ===
+                        "function"
+                    ) {
+
+                        refreshApp();
+
+                    }
+
+                } catch (error) {}
+
+                refreshDashboardExtras();
+
+            }, 100);
+
+        }
+    );
+
+
+    /* -----------------------------------------------------
+       6. RESTORE COMMON BUTTON BEHAVIOUR
+       ----------------------------------------------------- */
+
+    document.addEventListener(
+        "click",
+        function (event) {
+
+            const button =
+                event.target.closest("button");
+
+            if (!button) return;
+
+            /*
+               Ignore buttons that already have their
+               own application handler.
+            */
+
+            if (
+                button.closest(
+                    "#premiumCurrencyMenu"
+                )
+            ) {
+
+                return;
+
+            }
+
+            /*
+               Give the browser a moment to finish the
+               existing click handler before refreshing.
+            */
+
+            setTimeout(function () {
+
+                try {
+
+                    refreshDashboardExtras();
+
+                } catch (error) {}
+
+            }, 180);
+
+        },
+        false
+    );
+
+
+    /* -----------------------------------------------------
+       7. RESTORE CURRENCY DISPLAY
+       ----------------------------------------------------- */
+
+    function restoreCurrencyDisplay() {
+
+        try {
+
+            const currency =
+                appData &&
+                appData.business
+                    ? appData.business.currency
+                    : "Ksh";
+
+            const select =
+                document.getElementById("currency");
+
+            if (
+                select &&
+                currency
+            ) {
+
+                select.value = currency;
+
+            }
+
+            const code =
+                document.getElementById(
+                    "premiumCurrencyCode"
+                );
+
+            if (
+                code &&
+                currency
+            ) {
+
+                const currencyNames = {
+
+                    KES: "KSh · Kenya",
+
+                    Ksh: "KSh · Kenya",
+
+                    TSh: "TSh · Tanzania",
+
+                    Ush: "Ush · Uganda",
+
+                    RWF: "RWF · Rwanda",
+
+                    BIF: "BIF · Burundi",
+
+                    USD: "$ · United States",
+
+                    EUR: "€ · European Union",
+
+                    GBP: "£ · United Kingdom",
+
+                    ZAR: "R · South Africa",
+
+                    NGN: "₦ · Nigeria",
+
+                    GHS: "GH₵ · Ghana"
+
+                };
+
+                if (
+                    currencyNames[currency]
+                ) {
+
+                    code.textContent =
+                        currencyNames[currency];
+
+                }
+
+            }
+
+        } catch (error) {}
+
+    }
+
+
+    /* -----------------------------------------------------
+       8. RESTORE CURRENCY PICKER
+       ----------------------------------------------------- */
+
+    function restoreCurrencyPicker() {
+
+        try {
+
+            const trigger =
+                document.getElementById(
+                    "premiumCurrencyTrigger"
+                );
+
+            const menu =
+                document.getElementById(
+                    "premiumCurrencyMenu"
+                );
+
+            if (!trigger || !menu) return;
+
+            if (
+                trigger.dataset.restoreReady ===
+                "true"
+            ) {
+
+                return;
+
+            }
+
+            trigger.dataset.restoreReady =
+                "true";
+
+            trigger.addEventListener(
+                "click",
+                function (event) {
+
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    menu.classList.add("open");
+                    menu.classList.add("active");
+
+                    menu.style.display = "block";
+                    menu.style.visibility = "visible";
+                    menu.style.opacity = "1";
+                    menu.style.pointerEvents = "auto";
+
+                },
+                true
+            );
+
+            menu.addEventListener(
+                "click",
+                function (event) {
+
+                    const option =
+                        event.target.closest(
+                            ".premium-currency-option"
+                        );
+
+                    if (!option) return;
+
+                    const currency =
+                        option.dataset.currency;
+
+                    if (!currency) return;
+
+                    const select =
+                        document.getElementById(
+                            "currency"
+                        );
+
+                    if (select) {
+
+                        select.value =
+                            currency;
+
+                        select.dispatchEvent(
+                            new Event(
+                                "change",
+                                {
+                                    bubbles: true
+                                }
+                            )
+                        );
+
+                    }
+
+                    try {
+
+                        if (
+                            appData &&
+                            appData.business
+                        ) {
+
+                            appData.business.currency =
+                                currency;
+
+                        }
+
+                        localStorage.setItem(
+                            "bizpilot_currency",
+                            currency
+                        );
+
+                    } catch (error) {}
+
+                    setTimeout(
+                        restoreCurrencyDisplay,
+                        100
+                    );
+
+                },
+                true
+            );
+
+        } catch (error) {}
+
+    }
+
+
+    /* -----------------------------------------------------
+       9. CLOSE CURRENCY MENU SAFELY
+       ----------------------------------------------------- */
+
+    function closeCurrencyMenu() {
+
+        try {
+
+            const menu =
+                document.getElementById(
+                    "premiumCurrencyMenu"
+                );
+
+            if (!menu) return;
+
+            menu.classList.remove("open");
+            menu.classList.remove("active");
+
+            menu.style.display = "";
+            menu.style.visibility = "";
+            menu.style.opacity = "";
+            menu.style.pointerEvents = "";
+
+        } catch (error) {}
+
+    }
+
+
+    document.addEventListener(
+        "click",
+        function (event) {
+
+            const picker =
+                document.getElementById(
+                    "premiumCurrencyPicker"
+                );
+
+            if (!picker) return;
+
+            if (
+                !picker.contains(event.target)
+            ) {
+
+                closeCurrencyMenu();
+
+            }
+
+        },
+        true
+    );
+
+
+    document.addEventListener(
+        "keydown",
+        function (event) {
+
+            if (
+                event.key === "Escape"
+            ) {
+
+                closeCurrencyMenu();
+
+            }
+
+        }
+    );
+
+
+    /* -----------------------------------------------------
+       10. PREVENT ACCIDENTAL HORIZONTAL OVERFLOW
+       ----------------------------------------------------- */
+
+    function protectLayout() {
+
+        try {
+
+            document.documentElement.style
+                .overflowX = "hidden";
+
+            document.body.style
+                .overflowX = "hidden";
+
+        } catch (error) {}
+
+    }
+
+
+    /* -----------------------------------------------------
+       11. STARTUP
+       ----------------------------------------------------- */
+
+    function finalRestore() {
+
+        restoreAppData();
+
+        restoreCurrencyDisplay();
+
+        restoreCurrencyPicker();
+
+        protectLayout();
+
+        refreshDashboardExtras();
 
     }
 
@@ -27886,898 +27413,86 @@ if ("serviceWorker" in navigator) {
 
         document.addEventListener(
             "DOMContentLoaded",
-            start,
-            { once: true }
-        );
-
-    } else {
-
-        start();
-
-    }
-
-})();
-/* ============================================================
-   BIZPILOT — FINAL DELETE SYSTEM
-   ONE BUTTON • SALES • EXPENSES • INVENTORY • CUSTOMERS • INVOICES
-   ============================================================ */
-
-(function () {
-
-    function getData() {
-        try {
-            if (typeof appData !== "undefined" && appData) {
-                return appData;
-            }
-        } catch (e) {}
-
-        return null;
-    }
-
-    function getId(record) {
-        if (!record) return null;
-
-        return (
-            record.id ??
-            record._id ??
-            record.uuid ??
-            record.record_id ??
-            record.invoiceId ??
-            record.saleId ??
-            record.expenseId ??
-            record.customerId ??
-            record.productId ??
-            null
-        );
-    }
-
-    function getName(record, type) {
-        if (!record) return "Record";
-
-        if (type === "sales") {
-            return record.description ||
-                   record.item ||
-                   record.product ||
-                   record.name ||
-                   "Sale";
-        }
-
-        if (type === "expenses") {
-            return record.description ||
-                   record.category ||
-                   record.name ||
-                   "Expense";
-        }
-
-        if (type === "inventory") {
-            return record.name ||
-                   record.product ||
-                   record.item ||
-                   "Inventory item";
-        }
-
-        if (type === "customers") {
-            return record.name ||
-                   record.customerName ||
-                   record.full_name ||
-                   record.email ||
-                   "Customer";
-        }
-
-        if (type === "invoices") {
-            return record.invoiceNumber ||
-                   record.number ||
-                   record.customer ||
-                   "Invoice";
-        }
-
-        return "Record";
-    }
-
-    function escapeHTML(value) {
-        return String(value ?? "")
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-    }
-
-    function deleteRecord(type, id) {
-
-        const data = getData();
-
-        if (!data || !Array.isArray(data[type])) {
-            alert("Unable to find " + type + " records.");
-            return;
-        }
-
-        const index = data[type].findIndex(function (record) {
-            return String(getId(record)) === String(id);
-        });
-
-        if (index === -1) {
-            alert("Record not found.");
-            return;
-        }
-
-        const record = data[type][index];
-        const name = getName(record, type);
-
-        const confirmed = confirm(
-            "Delete this " +
-            type.replace(/s$/, "") +
-            "?\n\n" +
-            name +
-            "\n\nThis cannot be undone."
-        );
-
-        if (!confirmed) return;
-
-        data[type].splice(index, 1);
-
-        /* Save locally */
-        try {
-            if (typeof saveLocalData === "function") {
-                saveLocalData();
-            } else if (typeof saveData === "function") {
-                saveData();
-            } else {
-                localStorage.setItem(
-                    "bizpilot_v2",
-                    JSON.stringify(data)
-                );
-            }
-        } catch (error) {
-            console.warn("BizPilot: Local delete save issue.", error);
-        }
-
-        /* Delete from Supabase when possible */
-        try {
-            if (
-                typeof deleteFromCloud === "function" &&
-                getId(record)
-            ) {
-                deleteFromCloud(type, getId(record));
-            }
-        } catch (error) {
-            console.warn("BizPilot: Cloud delete skipped.", error);
-        }
-
-        /* Refresh the application */
-        try {
-            if (typeof refreshBizPilotAfterDelete === "function") {
-                refreshBizPilotAfterDelete();
-            }
-        } catch (error) {}
-
-        try {
-            if (typeof updateDashboard === "function") {
-                updateDashboard();
-            }
-        } catch (error) {}
-
-        closeDeleteSystem();
-
-        setTimeout(function () {
-            openDeleteSystem(type);
-        }, 250);
-    }
-
-
-    function openDeleteSystem(type) {
-
-        closeDeleteSystem();
-
-        const data = getData();
-
-        if (!data) return;
-
-        const overlay = document.createElement("div");
-
-        overlay.id = "bizpilotFinalDeleteOverlay";
-
-        overlay.innerHTML = `
-            <div class="bizpilot-final-delete-modal">
-
-                <div class="bizpilot-final-delete-header">
-
-                    <div>
-                        <span class="bizpilot-final-delete-label">
-                            BIZPILOT
-                        </span>
-
-                        <h2>Delete Records</h2>
-
-                        <p>
-                            Remove sales, expenses, inventory,
-                            customers or invoices.
-                        </p>
-                    </div>
-
-                    <button
-                        type="button"
-                        id="bizpilotFinalDeleteClose"
-                        class="bizpilot-final-delete-close"
-                    >
-                        ×
-                    </button>
-
-                </div>
-
-                <div class="bizpilot-final-delete-tabs">
-
-                    <button data-delete-type="sales">
-                        Sales
-                    </button>
-
-                    <button data-delete-type="expenses">
-                        Expenses
-                    </button>
-
-                    <button data-delete-type="inventory">
-                        Inventory
-                    </button>
-
-                    <button data-delete-type="customers">
-                        Customers
-                    </button>
-
-                    <button data-delete-type="invoices">
-                        Invoices
-                    </button>
-
-                </div>
-
-                <div
-                    id="bizpilotFinalDeleteList"
-                    class="bizpilot-final-delete-list"
-                ></div>
-
-            </div>
-        `;
-
-        document.body.appendChild(overlay);
-
-
-        function renderRecords(selectedType) {
-
-            const list =
-                document.getElementById(
-                    "bizpilotFinalDeleteList"
-                );
-
-            if (!list) return;
-
-            overlay
-                .querySelectorAll("[data-delete-type]")
-                .forEach(function (button) {
-
-                    button.classList.toggle(
-                        "active",
-                        button.dataset.deleteType === selectedType
-                    );
-
-                });
-
-            const records =
-                Array.isArray(data[selectedType])
-                    ? data[selectedType]
-                    : [];
-
-            list.innerHTML = "";
-
-            if (!records.length) {
-
-                list.innerHTML = `
-                    <div class="bizpilot-final-delete-empty">
-                        <strong>No records found</strong>
-                        <span>
-                            There are no ${selectedType}
-                            available to delete.
-                        </span>
-                    </div>
-                `;
-
-                return;
-            }
-
-            records.forEach(function (record) {
-
-                const id = getId(record);
-
-                if (id === null || id === undefined) {
-                    return;
-                }
-
-                const row =
-                    document.createElement("div");
-
-                row.className =
-                    "bizpilot-final-delete-row";
-
-                row.innerHTML = `
-                    <div class="bizpilot-final-delete-info">
-
-                        <strong>
-                            ${escapeHTML(
-                                getName(record, selectedType)
-                            )}
-                        </strong>
-
-                        <small>
-                            ${escapeHTML(
-                                selectedType
-                                    .charAt(0)
-                                    .toUpperCase() +
-                                selectedType.slice(1)
-                            )}
-                        </small>
-
-                    </div>
-
-                    <button
-                        type="button"
-                        class="bizpilot-final-delete-record"
-                        data-record-type="${selectedType}"
-                        data-record-id="${escapeHTML(String(id))}"
-                    >
-                        Delete
-                    </button>
-                `;
-
-                list.appendChild(row);
-            });
-        }
-
-
-        overlay
-            .querySelectorAll("[data-delete-type]")
-            .forEach(function (button) {
-
-                button.addEventListener(
-                    "click",
-                    function () {
-
-                        renderRecords(
-                            button.dataset.deleteType
-                        );
-
-                    }
-                );
-
-            });
-
-
-        overlay
-            .querySelector("#bizpilotFinalDeleteClose")
-            .addEventListener(
-                "click",
-                closeDeleteSystem
-            );
-
-
-        overlay.addEventListener(
-            "click",
-            function (event) {
-
-                if (event.target === overlay) {
-                    closeDeleteSystem();
-                }
-
-                const deleteButton =
-                    event.target.closest(
-                        ".bizpilot-final-delete-record"
-                    );
-
-                if (!deleteButton) return;
-
-                deleteRecord(
-                    deleteButton.dataset.recordType,
-                    deleteButton.dataset.recordId
-                );
-
-            }
-        );
-
-
-        renderRecords(type || "sales");
-    }
-
-
-    function closeDeleteSystem() {
-
-        const overlay =
-            document.getElementById(
-                "bizpilotFinalDeleteOverlay"
-            );
-
-        if (overlay) {
-            overlay.remove();
-        }
-    }
-
-
-    function createDeleteButton() {
-
-        if (
-            document.getElementById(
-                "bizpilotFinalDeleteButton"
-            )
-        ) {
-            return;
-        }
-
-        const button =
-            document.createElement("button");
-
-        button.id =
-            "bizpilotFinalDeleteButton";
-
-        button.type = "button";
-
-        button.innerHTML =
-            "🗑 Delete Records";
-
-        button.addEventListener(
-            "click",
-            function (event) {
-
-                event.preventDefault();
-                event.stopPropagation();
-
-                openDeleteSystem("sales");
-
-            }
-        );
-
-        document.body.appendChild(button);
-    }
-
-
-    function addStyles() {
-
-        if (
-            document.getElementById(
-                "bizpilotFinalDeleteStyles"
-            )
-        ) {
-            return;
-        }
-
-        const style =
-            document.createElement("style");
-
-        style.id =
-            "bizpilotFinalDeleteStyles";
-
-        style.textContent = `
-
-            #bizpilotFinalDeleteButton {
-
-                position: fixed !important;
-
-                right: 22px !important;
-                bottom: 22px !important;
-
-                z-index: 2147483647 !important;
-
-                display: flex !important;
-
-                align-items: center !important;
-                justify-content: center !important;
-
-                width: 165px !important;
-                height: 48px !important;
-
-                padding: 0 16px !important;
-
-                background: #ffffff !important;
-
-                color: #d62828 !important;
-
-                border: 1.5px solid #d62828 !important;
-
-                border-radius: 13px !important;
-
-                box-shadow:
-                    0 10px 30px rgba(17,17,17,.18) !important;
-
-                font-family: inherit !important;
-
-                font-size: 12px !important;
-
-                font-weight: 800 !important;
-
-                cursor: pointer !important;
-
-                visibility: visible !important;
-
-                opacity: 1 !important;
-
-                pointer-events: auto !important;
-
-                transition:
-                    transform .18s ease,
-                    background .18s ease,
-                    color .18s ease !important;
-            }
-
-            #bizpilotFinalDeleteButton:hover {
-
-                background: #d62828 !important;
-
-                color: #ffffff !important;
-
-                transform: translateY(-2px) !important;
-            }
-
-
-            #bizpilotFinalDeleteOverlay {
-
-                position: fixed !important;
-
-                inset: 0 !important;
-
-                z-index: 2147483646 !important;
-
-                display: flex !important;
-
-                align-items: center !important;
-
-                justify-content: center !important;
-
-                padding: 18px !important;
-
-                background:
-                    rgba(17,17,17,.60) !important;
-
-                backdrop-filter: blur(7px) !important;
-
-                -webkit-backdrop-filter: blur(7px) !important;
-            }
-
-
-            .bizpilot-final-delete-modal {
-
-                width: min(
-                    600px,
-                    calc(100vw - 24px)
-                ) !important;
-
-                max-height:
-                    calc(100vh - 40px) !important;
-
-                overflow: hidden !important;
-
-                background: #ffffff !important;
-
-                border-radius: 20px !important;
-
-                box-shadow:
-                    0 25px 70px rgba(0,0,0,.25) !important;
-            }
-
-
-            .bizpilot-final-delete-header {
-
-                display: flex !important;
-
-                justify-content: space-between !important;
-
-                align-items: flex-start !important;
-
-                gap: 15px !important;
-
-                padding: 22px !important;
-
-                border-bottom:
-                    1px solid #edf0f3 !important;
-            }
-
-
-            .bizpilot-final-delete-label {
-
-                color: #0396FF !important;
-
-                font-size: 9px !important;
-
-                font-weight: 900 !important;
-
-                letter-spacing: 1.5px !important;
-            }
-
-
-            .bizpilot-final-delete-header h2 {
-
-                margin: 5px 0 5px !important;
-
-                color: #111111 !important;
-
-                font-size: 21px !important;
-            }
-
-
-            .bizpilot-final-delete-header p {
-
-                margin: 0 !important;
-
-                color: #858b94 !important;
-
-                font-size: 11px !important;
-            }
-
-
-            .bizpilot-final-delete-close {
-
-                width: 36px !important;
-                height: 36px !important;
-
-                border: 0 !important;
-
-                border-radius: 10px !important;
-
-                background: #f4f5f7 !important;
-
-                color: #111111 !important;
-
-                font-size: 23px !important;
-
-                cursor: pointer !important;
-            }
-
-
-            .bizpilot-final-delete-tabs {
-
-                display: grid !important;
-
-                grid-template-columns:
-                    repeat(5, 1fr) !important;
-
-                gap: 7px !important;
-
-                padding: 14px !important;
-
-                background: #fafbfc !important;
-            }
-
-
-            .bizpilot-final-delete-tabs button {
-
-                min-height: 40px !important;
-
-                border: 1px solid #e4e8ed !important;
-
-                border-radius: 9px !important;
-
-                background: #ffffff !important;
-
-                color: #555d66 !important;
-
-                font-size: 10px !important;
-
-                font-weight: 800 !important;
-
-                cursor: pointer !important;
-            }
-
-
-            .bizpilot-final-delete-tabs button.active {
-
-                background: #111111 !important;
-
-                color: #ffffff !important;
-
-                border-color: #111111 !important;
-            }
-
-
-            .bizpilot-final-delete-list {
-
-                max-height: 55vh !important;
-
-                overflow-y: auto !important;
-
-                padding: 12px !important;
-            }
-
-
-            .bizpilot-final-delete-row {
-
-                display: flex !important;
-
-                align-items: center !important;
-
-                justify-content: space-between !important;
-
-                gap: 12px !important;
-
-                padding: 13px !important;
-
-                margin-bottom: 8px !important;
-
-                border: 1px solid #e7ebf0 !important;
-
-                border-radius: 12px !important;
-
-                background: #ffffff !important;
-            }
-
-
-            .bizpilot-final-delete-info {
-
-                min-width: 0 !important;
-
-                flex: 1 !important;
-            }
-
-
-            .bizpilot-final-delete-info strong {
-
-                display: block !important;
-
-                color: #111111 !important;
-
-                font-size: 12px !important;
-
-                font-weight: 800 !important;
-
-                white-space: nowrap !important;
-
-                overflow: hidden !important;
-
-                text-overflow: ellipsis !important;
-            }
-
-
-            .bizpilot-final-delete-info small {
-
-                display: block !important;
-
-                margin-top: 4px !important;
-
-                color: #858b94 !important;
-
-                font-size: 9px !important;
-            }
-
-
-            .bizpilot-final-delete-record {
-
-                flex: 0 0 auto !important;
-
-                min-width: 62px !important;
-
-                height: 34px !important;
-
-                padding: 0 11px !important;
-
-                border: 0 !important;
-
-                border-radius: 8px !important;
-
-                background: #fff0f0 !important;
-
-                color: #d62828 !important;
-
-                font-size: 10px !important;
-
-                font-weight: 800 !important;
-
-                cursor: pointer !important;
-            }
-
-
-            .bizpilot-final-delete-record:hover {
-
-                background: #d62828 !important;
-
-                color: #ffffff !important;
-            }
-
-
-            .bizpilot-final-delete-empty {
-
-                display: flex !important;
-
-                flex-direction: column !important;
-
-                align-items: center !important;
-
-                justify-content: center !important;
-
-                gap: 6px !important;
-
-                padding: 45px 20px !important;
-
-                text-align: center !important;
-
-                color: #858b94 !important;
-            }
-
-
-            .bizpilot-final-delete-empty strong {
-
-                color: #111111 !important;
-
-                font-size: 14px !important;
-            }
-
-
-            .bizpilot-final-delete-empty span {
-
-                font-size: 11px !important;
-            }
-
-
-            @media (max-width: 600px) {
-
-                #bizpilotFinalDeleteButton {
-
-                    right: 14px !important;
-
-                    bottom: 14px !important;
-
-                    width: 145px !important;
-
-                    height: 44px !important;
-
-                    font-size: 11px !important;
-                }
-
-                .bizpilot-final-delete-modal {
-
-                    width:
-                        calc(100vw - 20px) !important;
-
-                    border-radius: 17px !important;
-                }
-
-                .bizpilot-final-delete-tabs {
-
-                    grid-template-columns:
-                        repeat(3, 1fr) !important;
-                }
-
-                .bizpilot-final-delete-list {
-
-                    max-height: 60vh !important;
-                }
-            }
-        `;
-
-        document.head.appendChild(style);
-    }
-
-
-    function start() {
-
-        addStyles();
-
-        createDeleteButton();
-    }
-
-
-    if (document.readyState === "loading") {
-
-        document.addEventListener(
-            "DOMContentLoaded",
             function () {
-                setTimeout(start, 700);
+
+                setTimeout(
+                    finalRestore,
+                    700
+                );
+
             },
-            { once: true }
+            {
+                once: true
+            }
         );
 
     } else {
 
-        setTimeout(start, 700);
+        setTimeout(
+            finalRestore,
+            700
+        );
+
     }
 
 
-    window.bizpilotOpenDeleteSystem =
-        openDeleteSystem;
+    window.addEventListener(
+        "load",
+        function () {
 
-    window.bizpilotCloseDeleteSystem =
-        closeDeleteSystem;
+            setTimeout(
+                function () {
+
+                    restoreAppData();
+
+                    restoreCurrencyDisplay();
+
+                    restoreCurrencyPicker();
+
+                    refreshDashboardExtras();
+
+                },
+                500
+            );
+
+        }
+    );
+
+
+    /* -----------------------------------------------------
+       12. KEEP DASHBOARD UPDATED
+       ----------------------------------------------------- */
+
+    setInterval(
+        function () {
+
+            try {
+
+                const dashboard =
+                    document.getElementById(
+                        "dashboard"
+                    );
+
+                if (
+                    dashboard &&
+                    dashboard.classList.contains(
+                        "active"
+                    )
+                ) {
+
+                    refreshDashboardExtras();
+
+                }
+
+            } catch (error) {}
+
+        },
+        30000
+    );
+
+
+    console.log(
+        "BizPilot stability patch loaded successfully."
+    );
 
 })();
