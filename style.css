@@ -12510,3 +12510,193 @@ textarea {
     }
 
 }
+/* =========================================================
+   BIZPILOT — PREMIUM MOBILE NOTIFICATIONS
+   ========================================================= */
+
+#bizpilotPremiumToast {
+    display: none;
+}
+
+#bizpilotPremiumToast.bp-premium-toast {
+    position: fixed !important;
+    top: 18px !important;
+    right: 20px !important;
+    z-index: 2147483647 !important;
+
+    width: min(390px, calc(100vw - 32px)) !important;
+    box-sizing: border-box !important;
+
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+
+    padding: 16px !important;
+    border: 1px solid #e8edf3 !important;
+    border-radius: 17px !important;
+    background: #ffffff !important;
+    color: #111827 !important;
+
+    box-shadow: 0 16px 45px rgba(15, 23, 42, .16) !important;
+
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transform: translateY(-12px) !important;
+    pointer-events: none !important;
+
+    transition:
+        opacity .2s ease,
+        transform .2s ease,
+        visibility .2s ease !important;
+}
+
+#bizpilotPremiumToast.bp-toast-visible {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateY(0) !important;
+    pointer-events: auto !important;
+}
+
+.bp-toast-icon {
+    width: 37px;
+    height: 37px;
+    flex: 0 0 37px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: #e9f8ef;
+    color: #16834a;
+    font-size: 19px;
+    font-weight: 800;
+}
+
+.bp-toast-copy {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.bp-toast-title {
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.3;
+}
+
+.bp-toast-message {
+    color: #596579;
+    font-size: 12px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.bp-toast-close {
+    border: 0;
+    background: transparent;
+    color: #8993a2;
+    font-size: 23px;
+    cursor: pointer;
+    padding: 4px;
+}
+
+#bizpilotPremiumToast.bp-toast-error .bp-toast-icon {
+    background: #fff0f0;
+    color: #d62828;
+}
+
+#bizpilotPremiumToast.bp-toast-warning .bp-toast-icon {
+    background: #fff7e6;
+    color: #a15c00;
+}
+
+#bizpilotPremiumToast.bp-toast-loading .bp-toast-icon {
+    border: 3px solid #e6f2ff;
+    border-top-color: #0396ff;
+    background: #ffffff;
+    border-radius: 50%;
+    animation: bpToastSpin .7s linear infinite;
+}
+
+#bizpilotPremiumToast.bp-toast-loading .bp-toast-icon {
+    font-size: 0;
+}
+
+@keyframes bpToastSpin {
+    to { transform: rotate(360deg); }
+}
+
+.bp-auth-loading {
+    opacity: .8 !important;
+    cursor: wait !important;
+}
+
+@media (max-width: 600px) {
+    #bizpilotPremiumToast.bp-premium-toast {
+        top: 12px !important;
+        right: 12px !important;
+        left: 12px !important;
+        width: auto !important;
+        padding: 14px !important;
+        border-radius: 15px !important;
+    }
+}
+
+/* =========================================================
+   BIZPILOT — CONTEXTUAL DELETE BUTTON
+   Hide the permanent floating button outside record pages.
+   ========================================================= */
+
+#bizpilotPremiumDeleteButton {
+    display: none !important;
+    position: static !important;
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important;
+    padding: 0 !important;
+    margin: 0 8px 0 0 !important;
+    border-radius: 12px !important;
+    font-size: 0 !important;
+    box-shadow: none !important;
+    flex-shrink: 0 !important;
+}
+
+#bizpilotPremiumDeleteButton.bp-context-delete-visible {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: #fff1f1 !important;
+    color: #d62828 !important;
+    border: 1px solid #ffd7d7 !important;
+}
+
+#bizpilotPremiumDeleteButton.bp-context-delete-visible::before {
+    content: "▤";
+    font-size: 21px !important;
+    line-height: 1 !important;
+}
+
+#bizpilotPremiumDeleteButton.bp-context-delete-visible:hover {
+    background: #ffe4e4 !important;
+    border-color: #f3b5b5 !important;
+}
+
+@media (max-width: 600px) {
+    #bizpilotPremiumDeleteButton {
+        width: 40px !important;
+        height: 40px !important;
+        min-width: 40px !important;
+        margin-right: 5px !important;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #bizpilotPremiumToast.bp-premium-toast {
+        transition: none !important;
+    }
+
+    #bizpilotPremiumToast.bp-toast-loading .bp-toast-icon {
+        animation: none !important;
+    }
+}

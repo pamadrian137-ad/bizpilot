@@ -27496,3 +27496,331 @@ if ("serviceWorker" in navigator) {
     );
 
 })();
+/* =========================================================
+   BIZPILOT — PREMIUM AUTH NOTIFICATIONS + LOADING FEEDBACK
+   Append at the bottom of app.js
+   ========================================================= */
+(function () {
+    if (window.bizPilotPremiumAuthReady) return;
+    window.bizPilotPremiumAuthReady = true;
+
+    let toastTimer;
+    let lastToast = "";
+
+    function createToast() {
+        let toast = document.getElementById("bizpilotPremiumToast");
+        if (toast) return toast;
+
+        toast = document.createElement("div");
+        toast.id = "bizpilotPremiumToast";
+        toast.setAttribute("role", "status");
+        toast.setAttribute("aria-live", "polite");
+        toast.innerHTML = `
+            <span class="bp-toast-icon">✓</span>
+            <span class="bp-toast-copy">
+                <strong class="bp-toast-title">BizPilot</strong>
+                <span class="bp-toast-message"></span>
+            </span>
+            <button type="button" class="bp-toast-close"
+                    aria-label="Dismiss notification">×</button>
+        `;
+
+        document.body.appendChild(toast);
+
+        toast.querySelector(".bp-toast-close").addEventListener("click", () => {
+            toast.classList.remove("bp-toast-visible");
+        });
+
+        return toast;
+    }
+
+    window.bizPilotPremiumNotify = function (message, type) {
+        const toast = createToast();
+        const kind = type || "success";
+        const text = String(message || "").trim();
+
+        if (!text) return;
+
+        toast.className = "bp-premium-toast bp-toast-" + kind;
+        toast.querySelector(".bp-toast-title").textContent =
+            kind === "error" ? "Something went wrong" :
+            kind === "loading" ? "Please wait" :
+            kind === "warning" ? "Attention" :
+            "BizPilot";
+
+        toast.querySelector(".bp-toast-message").textContent = text;
+
+        const icon = toast.querySelector(".bp-toast-icon");
+        icon.textContent =
+            kind === "error" ? "!" :
+            kind === "loading" ? "" :
+            kind === "warning" ? "!" : "✓";
+
+        toast.classList.add("bp-toast-visible");
+
+        clearTimeout(toastTimer);
+
+        if (kind !== "loading") {
+            toastTimer = setTimeout(() => {
+                toast.classList.remove("bp-toast-visible");
+            }, 4200);
+        }
+    };
+
+    /* Wrap existing Supabase authentication methods safely. */
+    function enhanceAuthentication() {
+        const auth = window.supabaseClient &&
+                     window.supabaseClient.auth;
+
+        if (!auth || auth.__bizPilotPremiumWrapped) return;
+
+        auth.__bizPilotPremiumWrapped = true;
+
+        [
+            "signInWithPassword",
+            "signUp",
+            "resetPasswordForEmail"
+        ].forEach(function (method) {
+            if (typeof auth[method] !== "function") return;
+
+            const original = auth[method].bind(auth);
+
+            auth[method] = async function (...args) {
+                const isSignup = method === "signUp";
+                const isReset = method === "resetPasswordForEmail";
+
+                window.bizPilotPremiumNotify(
+                    isSignup ? "Creating your account…" :
+                    isReset ? "Sending your password reset request…" :
+                    "Signing you in…",
+                    "loading"
+                );
+
+                try {
+                    const result = await original(...args);
+
+                    if (result && result.error) {
+                        window.bizPilotPremiumNotify(
+                            result.error.message ||
+                                "We couldn't complete that request. Please try again.",
+                            "error"
+                        );
+                    } else if (isSignup) {
+                        const hasSession = !!(result && result.data &&
+                                               result.data.session);
+
+                        window.bizPilotPremiumNotify(
+                            hasSession
+                                ? "Your account is ready!"
+                                : "Registration submitted. Check your email if confirmation is required.",
+                            "success"
+                        );
+                    } else if (isReset) {
+                        window.bizPilotPremiumNotify(
+                            "If the account exists, password reset instructions will be sent.",
+                            "success"
+                        );
+                    } else if (result && result.data && result.data.session) {
+                        window.bizPilotPremiumNotify(
+                            "Welcome back! You're signed in.",
+                            "success"
+                        );
+                    } else {
+                        window.bizPilotPremiumNotify(
+                            "Your request has been processed.",
+                            "success"
+                        );
+                    }
+
+                    return result;
+                } catch (error) {
+                    window.bizPilotPremiumNotify(
+                        error && error.message
+                            ? error.message
+                            : "Connection problem. Please try again.",
+                        "error"
+                    );
+
+                    throw error;
+                }
+            };
+        });
+    }
+
+    /* Avoid blocking the page while the app initializes. */
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", enhanceAuthentication, {
+            once: true
+        });
+    } else {
+        enhanceAuthentication();
+    }
+
+    /* Re-enable methods if the Supabase client initializes later. */
+    let attempts = 0;
+
+    const authCheck = setInterval(function () {
+        attempts++;
+        enhanceAuthentication();
+
+        if (
+            (window.supabaseClient &&
+             window.supabaseClient.auth &&
+             window.supabaseClient.auth.__bizPilotPremiumWrapped) ||
+            attempts >= 20
+        ) {
+            clearInterval(authCheck);
+        }
+    }, 500);
+
+    /* Prevent accidental double submissions on auth forms. */
+    document.addEventListener("submit", function (event) {
+        const form = event.target;
+        if (!(form instanceof HTMLFormElement)) return;
+
+        const text = (
+            (form.innerText || "") + " " +
+            (form.id || "") + " " +
+            (form.getAttribute("name") || "")
+        ).toLowerCase();
+
+        const hasPassword = !!form.querySelector('input[type="password"]');
+        const looksLikeAuth =
+            hasPassword ||
+            /login|log-in|sign.?in|sign.?up|register|auth|account/.test(text);
+
+        if (!looksLikeAuth) return;
+
+        const button = event.submitter ||
+            form.querySelector(
+                'button[type="submit"], input[type="submit"]'
+            );
+
+        if (!button || button.dataset.bpLoading === "true") return;
+
+        button.dataset.bpLoading = "true";
+        button.dataset.bpOriginalText =
+            button.tagName === "INPUT" ? button.value : button.textContent;
+
+        button.disabled = true;
+        button.classList.add("bp-auth-loading");
+
+        if (button.tagName === "INPUT") {
+            button.value = "Please wait…";
+        } else {
+            button.textContent = "Please wait…";
+        }
+
+        /* Safety timeout if an auth response never arrives. */
+        setTimeout(function () {
+            if (!button.isConnected) return;
+
+            button.disabled = false;
+            button.classList.remove("bp-auth-loading");
+            button.dataset.bpLoading = "false";
+
+            if (button.tagName === "INPUT") {
+                button.value = button.dataset.bpOriginalText || "Continue";
+            } else {
+                button.textContent =
+                    button.dataset.bpOriginalText || "Continue";
+            }
+        }, 20000);
+    }, true);
+
+    /* Restore form buttons once Supabase returns a session. */
+    if (window.supabaseClient && window.supabaseClient.auth) {
+        window.supabaseClient.auth.onAuthStateChange(function (event) {
+            if (event !== "SIGNED_IN" && event !== "SIGNED_OUT") return;
+
+            document.querySelectorAll(".bp-auth-loading").forEach(function (button) {
+                button.disabled = false;
+                button.classList.remove("bp-auth-loading");
+                button.dataset.bpLoading = "false";
+
+                if (button.tagName === "INPUT") {
+                    button.value = button.dataset.bpOriginalText || "Continue";
+                } else {
+                    button.textContent =
+                        button.dataset.bpOriginalText || "Continue";
+                }
+            });
+        });
+    }
+})();
+/* =========================================================
+   BIZPILOT — CONTEXTUAL DELETE BUTTON CONTROLLER
+   ========================================================= */
+(function () {
+    if (window.bizPilotContextDeleteReady) return;
+    window.bizPilotContextDeleteReady = true;
+
+    const allowedPages = [
+        "sales",
+        "expenses",
+        "inventory",
+        "customers",
+        "invoices"
+    ];
+
+    function updateContextDeleteButton() {
+        const button = document.getElementById(
+            "bizpilotPremiumDeleteButton"
+        );
+
+        if (!button) return;
+
+        const activePage = document.querySelector(".page.active");
+        const pageId = activePage ? activePage.id : "";
+
+        const showButton = allowedPages.includes(pageId);
+
+        button.classList.toggle(
+            "bp-context-delete-visible",
+            showButton
+        );
+
+        button.setAttribute(
+            "aria-label",
+            "Open delete options for " + (pageId || "records")
+        );
+
+        button.title = "Delete records";
+
+        /* Place it with the page actions, not as a permanent floating control. */
+        const actions = document.querySelector(".top-actions");
+
+        if (actions && button.parentElement !== actions) {
+            const quickSale = document.getElementById("quickSaleBtn");
+
+            if (quickSale && quickSale.parentElement === actions) {
+                actions.insertBefore(button, quickSale);
+            } else {
+                actions.appendChild(button);
+            }
+        }
+    }
+
+    document.addEventListener("click", function (event) {
+        if (event.target.closest(".nav-item[data-page]")) {
+            requestAnimationFrame(updateContextDeleteButton);
+            setTimeout(updateContextDeleteButton, 250);
+        }
+    });
+
+    if (document.readyState === "loading") {
+        document.addEventListener(
+            "DOMContentLoaded",
+            updateContextDeleteButton,
+            { once: true }
+        );
+    } else {
+        updateContextDeleteButton();
+    }
+
+    window.addEventListener("load", updateContextDeleteButton);
+
+    /* The existing delete-center script may create its button later. */
+    setTimeout(updateContextDeleteButton, 1200);
+    setTimeout(updateContextDeleteButton, 2500);
+})();
