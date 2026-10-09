@@ -5022,39 +5022,31 @@ async function loginUser() {
         }
 
 
-        currentUser =
-            data.user;
+        // Save the authenticated user immediately
+currentUser = data.user;
 
+// Update the account interface
+updateProfileUI();
 
-        await loadCloudData();
+// CLOSE THE LOGIN BLOCK IMMEDIATELY
+closeModal();
 
+// Confirm successful login
+showToast("Welcome back to BizPilot.");
 
-        const metadata =
-            currentUser.user_metadata ||
-            {};
+// Load cloud data after the login block closes
+await loadCloudData();
 
+// Restore the business name if cloud data is unavailable
+const metadata = currentUser.user_metadata || {};
 
-        if (
-            metadata.business_name &&
-            !cloudDataLoaded
-        ) {
+if (metadata.business_name && !cloudDataLoaded) {
+    appData.business.name = metadata.business_name;
+    saveData();
+}
 
-            appData.business.name =
-                metadata.business_name;
-
-            saveData();
-
-        }
-
-
-        updateProfileUI();
-
-        closeModal();
-
-        showToast(
-            "Welcome back to BizPilot."
-        );
-
+// Refresh the interface with the loaded data
+updateProfileUI();
 
     } catch (error) {
 
