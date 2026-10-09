@@ -27816,3 +27816,49 @@ if ("serviceWorker" in navigator) {
     setTimeout(updateContextDeleteButton, 1200);
     setTimeout(updateContextDeleteButton, 2500);
 })();
+/* =========================================================
+   BIZPILOT — RESTORE DASHBOARD CLICK ACCESS
+   ========================================================= */
+
+(function () {
+    "use strict";
+
+    function restoreClickAccess() {
+        // Hidden login/modal overlay must never block the page.
+        const modal = document.getElementById("modalOverlay");
+
+        if (modal && !modal.classList.contains("show")) {
+            modal.style.setProperty("pointer-events", "none", "important");
+            modal.style.setProperty("visibility", "hidden", "important");
+        }
+
+        // Remove a leftover delete overlay if it is no longer usable.
+        const deleteOverlay = document.getElementById(
+            "bizpilotFinalDeleteOverlay"
+        );
+
+        if (deleteOverlay) {
+            const closeButton = deleteOverlay.querySelector(
+                "#bizpilotFinalDeleteClose"
+            );
+
+            if (!closeButton) {
+                deleteOverlay.remove();
+            }
+        }
+
+        // Restore page interaction without enabling every disabled button.
+        document.body.style.removeProperty("pointer-events");
+        document.documentElement.style.removeProperty("pointer-events");
+    }
+
+    restoreClickAccess();
+
+    // Recheck after the interface updates.
+    document.addEventListener("DOMContentLoaded", restoreClickAccess);
+
+    // Run when the page returns to the foreground.
+    window.addEventListener("pageshow", restoreClickAccess);
+
+    console.log("BizPilot click access restored.");
+})();
